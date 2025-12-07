@@ -13,7 +13,15 @@
 #include <tuple>
 
 #include "kiz.hpp"
-#include "../libs/builtins/builtin_functions/builtin_functions.hpp"
+#include "models.hpp"
+
+#include "bool_obj.hpp"
+#include "nil_obj.hpp"
+#include "int_obj.hpp"
+#include "rational_obj.hpp"
+#include "str_obj.hpp"
+#include "list_obj.hpp"
+#include "dict_obj.hpp"
 
 
 namespace kiz {
