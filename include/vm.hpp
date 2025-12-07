@@ -13,16 +13,12 @@
 #include <tuple>
 
 #include "kiz.hpp"
-#include "models.hpp"
 
-#include "bool_obj.hpp"
-#include "nil_obj.hpp"
-#include "int_obj.hpp"
-#include "rational_obj.hpp"
-#include "str_obj.hpp"
-#include "list_obj.hpp"
-#include "dict_obj.hpp"
-
+namespace model {
+class Object;
+class Module;
+class CodeObject;
+}
 
 namespace kiz {
 
@@ -47,7 +43,7 @@ struct CallFrame {
 class Vm {
     static deps::HashMap<model::Module*> loaded_modules;
     static model::Module* main_module;
-    static std::stack<model::Object *> op_stack_;
+    static std::stack<model::Object*> op_stack_;
     static std::vector<std::unique_ptr<CallFrame>> call_stack_;
     static bool running_;
     static const std::string& file_path;
@@ -66,39 +62,39 @@ public:
     static void call_function(model::Object* func_obj, model::Object* args_obj, model::Object* self);
 
 private:
-    void exec_ADD(const Instruction& instruction);
-    void exec_SUB(const Instruction& instruction);
-    void exec_MUL(const Instruction& instruction);
-    void exec_DIV(const Instruction& instruction);
-    void exec_MOD(const Instruction& instruction);
-    void exec_POW(const Instruction& instruction);
-    void exec_NEG(const Instruction& instruction);
-    void exec_EQ(const Instruction& instruction);
-    void exec_GT(const Instruction& instruction);
-    void exec_LT(const Instruction& instruction);
-    void exec_AND(const Instruction& instruction);
-    void exec_NOT(const Instruction& instruction);
-    void exec_OR(const Instruction& instruction);
-    void exec_IS(const Instruction& instruction);
-    void exec_IN(const Instruction& instruction);
-    void exec_MAKE_LIST(const Instruction& instruction);
-    void exec_CALL(const Instruction& instruction);
-    void exec_RET(const Instruction& instruction);
-    void exec_GET_ATTR(const Instruction& instruction);
-    void exec_SET_ATTR(const Instruction& instruction);
-    void exec_CALL_METHOD(const Instruction& instruction);
-    void exec_LOAD_VAR(const Instruction& instruction);
-    void exec_LOAD_CONST(const Instruction& instruction);
-    void exec_SET_GLOBAL(const Instruction& instruction);
-    void exec_SET_LOCAL(const Instruction& instruction);
-    void exec_SET_NONLOCAL(const Instruction& instruction);
-    void exec_JUMP(const Instruction& instruction);
-    void exec_JUMP_IF_FALSE(const Instruction& instruction);
-    void exec_THROW(const Instruction& instruction);
-    void exec_POP_TOP(const Instruction& instruction);
-    void exec_SWAP(const Instruction& instruction);
-    void exec_COPY_TOP(const Instruction& instruction);
-    void exec_STOP(const Instruction& instruction);
+    static void exec_ADD(const Instruction& instruction);
+    static void exec_SUB(const Instruction& instruction);
+    static void exec_MUL(const Instruction& instruction);
+    static void exec_DIV(const Instruction& instruction);
+    static void exec_MOD(const Instruction& instruction);
+    static void exec_POW(const Instruction& instruction);
+    static void exec_NEG(const Instruction& instruction);
+    static void exec_EQ(const Instruction& instruction);
+    static void exec_GT(const Instruction& instruction);
+    static void exec_LT(const Instruction& instruction);
+    static void exec_AND(const Instruction& instruction);
+    static void exec_NOT(const Instruction& instruction);
+    static void exec_OR(const Instruction& instruction);
+    static void exec_IS(const Instruction& instruction);
+    static void exec_IN(const Instruction& instruction);
+    static void exec_MAKE_LIST(const Instruction& instruction);
+    static void exec_CALL(const Instruction& instruction);
+    static void exec_RET(const Instruction& instruction);
+    static void exec_GET_ATTR(const Instruction& instruction);
+    static void exec_SET_ATTR(const Instruction& instruction);
+    static void exec_CALL_METHOD(const Instruction& instruction);
+    static void exec_LOAD_VAR(const Instruction& instruction);
+    static void exec_LOAD_CONST(const Instruction& instruction);
+    static void exec_SET_GLOBAL(const Instruction& instruction);
+    static void exec_SET_LOCAL(const Instruction& instruction);
+    static void exec_SET_NONLOCAL(const Instruction& instruction);
+    static void exec_JUMP(const Instruction& instruction);
+    static void exec_JUMP_IF_FALSE(const Instruction& instruction);
+    static void exec_THROW(const Instruction& instruction);
+    static void exec_POP_TOP(const Instruction& instruction);
+    static void exec_SWAP(const Instruction& instruction);
+    static void exec_COPY_TOP(const Instruction& instruction);
+    static void exec_STOP(const Instruction& instruction);
 };
 
 } // namespace kiz
