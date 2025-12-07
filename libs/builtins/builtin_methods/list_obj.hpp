@@ -58,14 +58,31 @@ inline auto list_eq = [](Object* self, const List* args) -> Object* {
         return new Bool(false);
     }
     
-    // 逐个比较元素（类型一致 + 值相等才视为相等）
+    // 逐个比较元素
     for (size_t i = 0; i < self_list->val.size(); ++i) {
         Object* self_elem = self_list->val[i];
         Object* another_elem = another_list->val[i];
 
-        // todo : finish self_elem.magic_eq(another_elem)
+        // 获取当前元素的 __eq__ 方法
+        const auto elem_eq_method = kiz::Vm::get_attr(self_elem, "__eq__");
+        assert(elem_eq_method != nullptr && "Element must implement __eq__ method");
+        
+        // 调用 __eq__ 
+        auto eq_result = kiz::Vm::call_function(
+            elem_eq_method, new List({another_elem}), self_elem
+        );
+        
+        // 解析比较结果
+        const auto eq_bool = dynamic_cast<Bool*>(eq_result);
+        assert(eq_bool != nullptr && "__eq__ method must return Bool type");
+        
+        // 任意元素不相等，返回 false
+        if (!eq_bool->val) {
+            return new Bool(false);
+        }
     }
     
+    // 所有元素均相等，返回 true
     return new Bool(true);
 };
 
@@ -82,31 +99,44 @@ inline auto list_contains = [](Object* self, const List* args) -> Object* {
     
     // 遍历列表元素，逐个判断是否与目标元素相等
     for (Object* elem : self_list->val) {
-        bool elem_equal = false;
-        
-        // 按元素类型匹配校验（与list_eq逻辑完全一致，确保行为统一）
-        if (auto elem_int = dynamic_cast<Int*>(elem); elem_int) {
-            auto target_int = dynamic_cast<Int*>(target_elem);
-            elem_equal = (target_int && elem_int->val == target_int->val);
-        } else if (auto elem_bool = dynamic_cast<Bool*>(elem); elem_bool) {
-            auto target_bool = dynamic_cast<Bool*>(target_elem);
-            elem_equal = (target_bool && elem_bool->val == target_bool->val);
-        } else if (auto elem_nil = dynamic_cast<Nil*>(elem); elem_nil) {
-            auto target_nil = dynamic_cast<Nil*>(target_elem);
-            elem_equal = (target_nil != nullptr);
-        } else if (auto elem_str = dynamic_cast<String*>(elem); elem_str) {
-            auto target_str = dynamic_cast<String*>(target_elem);
-            elem_equal = (target_str && elem_str->val == target_str->val);
-        }
+        const auto elem_eq_method = kiz::Vm::get_attr(elem, "__eq__");
+
+        auto result = kiz::Vm::call_function(
+            elem_eq_method, new List({target_elem}), elem
+        );
+    
+        const auto result_val = dynamic_cast<Bool*>(result);
+        assert(result_val!=nullptr);
         
         // 找到匹配元素，立即返回true
-        if (elem_equal) {
-            return new Bool(true);
+        if (result_val->val == true) {
+            result_val->make_ref();
+            return result_val;
         }
     }
     
     // 遍历完未找到匹配元素，返回false
     return new Bool(false);
+};
+
+// List.append：向列表尾部添加一个元素
+inline auto list_append = [](Object* self, const List* args) -> Object* {
+    DEBUG_OUTPUT("You given " + std::to_string(args->val.size()) + " arguments (list_append)");
+    assert(args->val.size() == 1 && "function List.append need 1 arg");
+    
+    auto self_list = dynamic_cast<List*>(self);
+    assert(self_list != nullptr && "list_append must be called by List object");
+    
+    Object* elem_to_add = args->val[0];
+    assert(elem_to_add != nullptr && "List.append argument cannot be nullptr");
+    
+    // 添加元素到列表尾部
+    self_list->val.push_back(elem_to_add);
+    elem_to_add->make_ref();
+    
+    // 返回列表自身，支持链式调用
+    self->make_ref();
+    return self;
 };
 
 }  // namespace model
