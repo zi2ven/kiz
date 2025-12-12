@@ -11,6 +11,7 @@ object Point
 	end
 
 	fn __call__(this, x, y)
+		# 这里的create函数实际上是创造一个空对象, 其__parent__属性指向Point
 		obj = create(this)
 		obj._x = x
 		obj._y = y
