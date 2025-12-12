@@ -177,6 +177,11 @@ void Vm::load(model::Module* src_module) {
     DEBUG_OUTPUT("call stack length: " + std::to_string(this->call_stack_.size()));
 }
 
+model::Object* Vm::get_return_val() {
+    assert(!op_stack_.empty());
+    return op_stack_.top();
+}
+
 void Vm::extend_code(const model::CodeObject* code_object) {
     DEBUG_OUTPUT("exec extend_code (覆盖模式)...");
     DEBUG_OUTPUT("call stack length: " + std::to_string(this->call_stack_.size()));
