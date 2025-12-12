@@ -102,6 +102,11 @@ void Vm::call_function(model::Object* func_obj, model::Object* args_obj, model::
         // 释放临时引用
         func_obj->del_ref();
         args_obj->del_ref();
+    // 处理对象魔术方法__call__
+    } else if (auto callable_obj = func_obj->find("__call__")) {
+        call_function(callable_obj, args_obj, self);
+        func_obj->del_ref();
+        args_obj->del_ref();
     } else {
         // 释放临时引用（类型错误时）
         func_obj->del_ref();
