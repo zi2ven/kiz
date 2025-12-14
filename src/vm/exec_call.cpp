@@ -86,7 +86,10 @@ void Vm::call_function(model::Object* func_obj, model::Object* args_obj, model::
         new_frame->is_week_scope = false;
 
         // 储存self
-        args_list.emplace(args_list.begin(), self);
+        if (self) {
+            self->make_ref()
+            args_list->val.emplace(args_list.begin(), self);
+        }
 
         // 从参数列表中提取参数，存入调用帧 locals
         for (size_t i = 0; i < required_argc; ++i) {
