@@ -24,7 +24,7 @@ void Vm::exec_LOAD_VAR(const Instruction& instruction) {
     }
 
     size_t name_idx = instruction.opn_list[0];
-    std::string var_name = call_stack_.back()->names[name_idx];
+    std::string var_name = call_stack_.back()->code_object->names[name_idx];
     
     // 遍历调用栈
     std::shared_ptr<deps::HashMap<model::Object*>::Node> var_it;
@@ -86,10 +86,10 @@ void Vm::exec_SET_GLOBAL(const Instruction& instruction) {
     }
     CallFrame* global_frame = call_stack_.front().get();
     size_t name_idx = instruction.opn_list[0];
-    if (name_idx >= global_frame->names.size()) {
+    if (name_idx >= global_frame->code_object->names.size()) {
         assert(false && "SET_GLOBAL: 变量名索引超出范围");
     }
-    std::string var_name = global_frame->names[name_idx];
+    std::string var_name = global_frame->code_object->names[name_idx];
 
     model::Object* var_val = op_stack_.top();
     op_stack_.pop();
@@ -109,10 +109,10 @@ void Vm::exec_SET_LOCAL(const Instruction& instruction) {
     }
     CallFrame* curr_frame = call_stack_.back().get();
     size_t name_idx = instruction.opn_list[0];
-    if (name_idx >= curr_frame->names.size()) {
+    if (name_idx >= curr_frame->code_object->names.size()) {
         assert(false && "SET_LOCAL: 变量名索引超出范围");
     }
-    const std::string var_name = curr_frame->names[name_idx];
+    const std::string var_name = curr_frame->code_object->names[name_idx];
     DEBUG_OUTPUT("ok to get var name: " + var_name);
 
     model::Object* var_val = op_stack_.top();
@@ -142,8 +142,8 @@ void Vm::exec_SET_NONLOCAL(const Instruction& instruction) {
     ++frame_it;
     for (; frame_it != call_stack_.rend(); ++frame_it) {
         CallFrame* frame = frame_it->get();
-        if (name_idx >= frame->names.size()) continue;
-        var_name = frame->names[name_idx];
+        if (name_idx >= frame->code_object->names.size()) continue;
+        var_name = frame->code_object->names[name_idx];
         if (frame->locals.find(var_name)) {
             target_frame = frame;
             break;
@@ -176,10 +176,10 @@ void Vm::exec_GET_ATTR(const Instruction& instruction) {
     size_t name_idx = instruction.opn_list[0];
     CallFrame* curr_frame = call_stack_.back().get();
 
-    if (name_idx >= curr_frame->names.size()) {
+    if (name_idx >= curr_frame->code_object->names.size()) {
         assert(false && "GET_ATTR: 属性名索引超出范围");
     }
-    std::string attr_name = curr_frame->names[name_idx];
+    std::string attr_name = curr_frame->code_object->names[name_idx];
 
     model::Object* attr_val = get_attr(obj, attr_name);
     attr_val->make_ref();
@@ -198,10 +198,10 @@ void Vm::exec_SET_ATTR(const Instruction& instruction) {
     size_t name_idx = instruction.opn_list[0];
     CallFrame* curr_frame = call_stack_.back().get();
 
-    if (name_idx >= curr_frame->names.size()) {
+    if (name_idx >= curr_frame->code_object->names.size()) {
         assert(false && "SET_ATTR: 属性名索引超出范围");
     }
-    std::string attr_name = curr_frame->names[name_idx];
+    std::string attr_name = curr_frame->code_object->names[name_idx];
 
     auto attr_it = obj->attrs.find(attr_name);
     if (attr_it != nullptr) {
