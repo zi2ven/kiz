@@ -44,4 +44,5 @@ True Nil False
     **远期的**
     - **feature** 添加import(语句形式:`import "path"`与`import mod_name`并存)及其相关的`IMPORT <name_idx>`字节码指令(注意vm.hpp已有相关预留), 循环导入检查, 形如`mod.func()`的模块属性调用系统(注意：在模块访问模块函数时应该在调用栈添加模块的相关栈帧, 以实现模块函数内部不带模块名访问模块内部成员功能), std模块系统(在model::std_modules中注册)和用户模块系统
     - **feature** 完善builtins object的, `__getitem__`, `__setitem__`, `__hash__`, `__str__`, `__repr__`, `__copy__`这些魔术方法, 同时支持用户定义的魔术方法
+    - **feature** 完成for语句
     - **feature** 完成try-catch throw语句
