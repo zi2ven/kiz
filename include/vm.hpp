@@ -28,36 +28,32 @@ enum class Opcode;
 struct Instruction {
     Opcode opc;
     std::vector<size_t> opn_list;
-    size_t start_lineno;
-    size_t end_lineno;
-};
-
-
-struct VmState{
-    model::Object* stack_top;
-    deps::HashMap<model::Object*> locals;
+    PositionInfo pos;
 };
 
 struct CallFrame {
-    bool is_week_scope;
+    std::string name;
+
+    // 本函数/模块对象的属性
+    deps::HashMap<model::Object*>& attrs;
     deps::HashMap<model::Object*> locals;
+
     size_t pc = 0;
     size_t return_to_pc;
-    std::string name;
     model::CodeObject* code_object;
-    std::vector<std::tuple<size_t, size_t>> curr_lineno_map;
-    std::vector<std::string> names;
 };
 
 class Vm {
+public:
     static deps::HashMap<model::Module*> loaded_modules;
     static model::Module* main_module;
+
     static std::stack<model::Object*> op_stack_;
     static std::vector<std::unique_ptr<CallFrame>> call_stack_;
+    static deps::HashMap<model::Object*> builtins;
+
     static bool running_;
     static std::string file_path;
-public:
-    static deps::HashMap<model::Object*> builtins;
 
     explicit Vm(const std::string& file_path_);
     static void load(model::Module* src_module);
