@@ -3,7 +3,7 @@
 namespace model {
 
 // Bool.__call__
-model::Object* str_bool(model::Object* self, const model::List* args) {
+model::Object* bool_call(model::Object* self, const model::List* args) {
     const auto a = get_one_arg();
     return new model::Bool(
         kiz::Vm::check_is_true(a)
