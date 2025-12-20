@@ -10,6 +10,14 @@
 
 namespace util {
 
+struct PositionInfo {
+    // std::string file_path;
+    size_t lno_start;
+    size_t lno_end;
+    size_t col_start;
+    size_t col_end;
+};
+
 struct ErrorInfo {
     const std::string name;
     const std::string content;
@@ -20,10 +28,7 @@ std::string generate_separator(const int col_start, const int col_end, const int
 
 void error_reporter(
     const std::string& src_path,
-    const int& src_line_start,
-    const int& src_line_end,
-    const int& src_col_start,
-    const int& src_col_end,
+    const PositionInfo& pos,
     const ErrorInfo& error
 );
 
