@@ -19,9 +19,6 @@ std::unique_ptr<BlockStmt> Parser::parse_block(TokenType endswith = TokenType::E
     while (curr_tok_idx_ < tokens_.size()) {
         const Token& curr_tok = curr_token();
 
-        if (curr_tok.type == TokenType::End) {
-            break;
-        }
         if (curr_tok.type == endswith) {
             break;
         }
@@ -56,8 +53,7 @@ std::unique_ptr<IfStmt> Parser::parse_if() {
         if (curr_token().type == TokenType::If) {
             // else if分支
             std::vector<std::unique_ptr<Statement>> else_if_stmts;
-            skip_token("if");
-            else_if_stmts.push_back(parse_if());
+            else_if_stmts.push_back(parse_stmt());
             else_block = std::make_unique<BlockStmt>(std::move(else_if_stmts));
         } else {
             // else分支（无end的块）
