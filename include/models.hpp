@@ -33,6 +33,8 @@ namespace MagicName {
     constexpr std::string Parent = "__parent__";
     constexpr std::string Call = "__call__";
     constexpr std::string Bool = "__bool__";
+    constexpr std::string GetItem = "__getitem__";
+    constexpr std::string SetItem = "__setitem__";
     constexpr std::string Contains = "__contains__";
     constexpr std::string OwnerModule = "__owner_module__";
 }
