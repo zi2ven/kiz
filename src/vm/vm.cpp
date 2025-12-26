@@ -63,6 +63,21 @@ Vm::Vm(const std::string& file_path_) {
         return new model::String(self->to_string());
     }));
 
+    model::based_obj->attrs.insert("__getitem__", new model::CppFunction([](const model::Object* self, const model::List* args) -> model::Object* {
+        auto attr = get_one_arg(args);
+        auto attr_str = dynamic_cast<model::String*>(attr);
+        assert(attr_str != nullptr);
+        return get_attr(self, attr_str->val);
+    }));
+
+    model::based_obj->attrs.insert("__setitem__", new model::CppFunction([](const model::Object* self, const model::List* args) -> model::Object* {
+        assert(args.size() == 2);
+        auto attr = args[0];
+        auto attr_str = dynamic_cast<model::String*>(attr);
+        assert(attr_str != nullptr);
+        return self->insert(attr_str->val, args[1]);
+    }));
+
     // Bool 类型魔法方法
     model::based_bool->attrs.insert("__eq__", new model::CppFunction(model::bool_eq));
     model::based_bool->attrs.insert("__call__", new model::CppFunction(model::bool_call));
@@ -136,7 +151,7 @@ void Vm::load(model::Module* src_module) {
     auto module_call_frame = std::make_unique<CallFrame>(
         src_module->name,                // 调用帧名称与模块名一致（便于调试）
 
-        src_module->attrs,
+        src_module,
         deps::HashMap<model::Object*>(), // 初始空局部变量表
 
         0,                               // 程序计数器初始化为0（从第一条指令开始执行）
@@ -186,6 +201,20 @@ void Vm::load(model::Module* src_module) {
 model::Object* Vm::get_return_val() {
     assert(!op_stack_.empty());
     return op_stack_.top();
+}
+
+CallFrame* Vm::fetch_curr_callframe() {
+    if ( !call_stack_.empty() ) {
+        return call_stack_.back()
+    }
+    assert(false);
+}
+
+model::Object* fetch_one_from_stack_top() { 
+    if ( !op_stack_.empty() ) {
+        return call_stack_.top()
+    }
+    assert(false);
 }
 
 void Vm::extend_code(const model::CodeObject* code_object) {
