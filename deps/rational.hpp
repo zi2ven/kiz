@@ -11,7 +11,7 @@
 #include <stdexcept>
 #include <utility>
 
-namespace deps {
+namespace dep {
 
 class BigInt;
 
@@ -146,10 +146,10 @@ private:
     }
 };
 
-} // namespace deps
+} // namespace dep
 
 // 实现 BigInt 除法返回 Rational（核心需求）
 // 重载 BigInt 的 / 运算符，直接返回 Rational 对象
-inline deps::Rational operator/(const deps::BigInt& lhs, const deps::BigInt& rhs) {
+inline dep::Rational operator/(const dep::BigInt& lhs, const dep::BigInt& rhs) {
     return {lhs, rhs}; // 复用 Rational 双参数构造（自动约分）
 }

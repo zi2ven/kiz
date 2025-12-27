@@ -17,7 +17,7 @@ model::Object* rational_add(model::Object* self, const model::List* args) {
 
     auto another_int = dynamic_cast<Int*>(args->val[0]);
     if (another_int) {
-        deps::Rational rhs_rational(another_int->val, deps::BigInt(1));
+        dep::Rational rhs_rational(another_int->val, dep::BigInt(1));
         return new Rational(self_rational->val + rhs_rational);
     }
 
@@ -39,7 +39,7 @@ model::Object* rational_sub(model::Object* self, const model::List* args) {
 
     auto another_int = dynamic_cast<Int*>(args->val[0]);
     if (another_int) {
-        deps::Rational rhs_rational(another_int->val, deps::BigInt(1));
+        dep::Rational rhs_rational(another_int->val, dep::BigInt(1));
         return new Rational(self_rational->val - rhs_rational);
     }
 
@@ -61,7 +61,7 @@ model::Object* rational_mul(model::Object* self, const model::List* args) {
 
     auto another_int = dynamic_cast<Int*>(args->val[0]);
     if (another_int) {
-        deps::Rational rhs_rational(another_int->val, deps::BigInt(1));
+        dep::Rational rhs_rational(another_int->val, dep::BigInt(1));
         return new Rational(self_rational->val * rhs_rational);
     }
 
@@ -83,10 +83,10 @@ model::Object* rational_div(model::Object* self, const model::List* args) {
 
     auto another_int = dynamic_cast<Int*>(args->val[0]);
     if (another_int) {
-        if (another_int->val == deps::BigInt(0)) {
+        if (another_int->val == dep::BigInt(0)) {
             throw std::invalid_argument("Rational division by zero");
         }
-        deps::Rational rhs_rational(another_int->val, deps::BigInt(1));
+        dep::Rational rhs_rational(another_int->val, dep::BigInt(1));
         return new Rational(self_rational->val / rhs_rational);
     }
 
@@ -108,7 +108,7 @@ model::Object* rational_eq(model::Object* self, const model::List* args) {
 
     auto another_int = dynamic_cast<Int*>(args->val[0]);
     if (another_int) {
-        deps::Rational rhs_rational(another_int->val, deps::BigInt(1));
+        dep::Rational rhs_rational(another_int->val, dep::BigInt(1));
         return new Bool(self_rational->val == rhs_rational);
     }
 
@@ -130,7 +130,7 @@ model::Object* rational_lt(model::Object* self, const model::List* args) {
 
     auto another_int = dynamic_cast<Int*>(args->val[0]);
     if (another_int) {
-        deps::Rational rhs_rational(another_int->val, deps::BigInt(1));
+        dep::Rational rhs_rational(another_int->val, dep::BigInt(1));
         return new Bool(self_rational->val < rhs_rational);
     }
 
@@ -152,7 +152,7 @@ model::Object* rational_gt(model::Object* self, const model::List* args) {
 
     auto another_int = dynamic_cast<Int*>(args->val[0]);
     if (another_int) {
-        deps::Rational rhs_rational(another_int->val, deps::BigInt(1));
+        dep::Rational rhs_rational(another_int->val, dep::BigInt(1));
         return new Bool(self_rational->val > rhs_rational);
     }
 

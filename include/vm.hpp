@@ -38,21 +38,22 @@ struct CallFrame {
     std::string name;
 
     model::Object* owner;
-    deps::HashMap<model::Object*> locals;
+    dep::HashMap<model::Object*> locals;
 
     size_t pc = 0;
     size_t return_to_pc;
     model::CodeObject* code_object;
+    err::PositionInfo call_pos;
 };
 
 class Vm {
 public:
-    static deps::HashMap<model::Module*> loaded_modules;
+    static dep::HashMap<model::Module*> loaded_modules;
     static model::Module* main_module;
 
     static std::stack<model::Object*> op_stack_;
     static std::vector<std::unique_ptr<CallFrame>> call_stack_;
-    static deps::HashMap<model::Object*> builtins;
+    static dep::HashMap<model::Object*> builtins;
 
     static bool running_;
     static std::string file_path;
@@ -62,8 +63,8 @@ public:
     static void set_main_module(model::Module* src_module);
     static void exec_curr_code();
     static void set_curr_code(const model::CodeObject* code_object);
-    static void throw_error (err::ErrorInfo& err);
-    static void load_required_modules(const deps::HashMap<model::Module*>& modules);
+    static void throw_error (const err::ErrorInfo& err);
+    static void load_required_modules(const dep::HashMap<model::Module*>& modules);
     
     static model::Object* get_stack_top();
     static void exec(const Instruction& instruction);

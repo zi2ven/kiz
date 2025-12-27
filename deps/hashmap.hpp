@@ -14,7 +14,7 @@
 #include <sstream>
 #include <utility>
 
-namespace deps {
+namespace dep {
 
 // 字符串哈希函数（FNV-1a算法）
 inline size_t hash_string(const std::string& key) {
@@ -285,4 +285,4 @@ public:
     }
 };
 
-} // namespace deps
+} // namespace dep

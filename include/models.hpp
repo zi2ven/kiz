@@ -60,7 +60,7 @@ std::string ptr_to_string(T* m) {
 class Object {
     std::atomic<size_t> refc_ = 0;
 public:
-    deps::HashMap<Object*> attrs;
+    dep::HashMap<Object*> attrs;
 
     // 对象类型枚举
     enum class ObjectType {
@@ -145,7 +145,7 @@ class Module : public Object {
 public:
     std::string name;
     CodeObject *code = nullptr;
-    deps::HashMap<Object*> attrs;
+    dep::HashMap<Object*> attrs;
 
     static constexpr ObjectType TYPE = ObjectType::OT_Module;
     [[nodiscard]] ObjectType get_type() const override { return TYPE; }
@@ -227,15 +227,15 @@ public:
 
 class Int : public Object {
 public:
-    deps::BigInt val;
+    dep::BigInt val;
 
     static constexpr ObjectType TYPE = ObjectType::OT_Int;
     [[nodiscard]] ObjectType get_type() const override { return TYPE; }
 
-    explicit Int(deps::BigInt val) : val(std::move(val)) {
+    explicit Int(dep::BigInt val) : val(std::move(val)) {
         attrs.insert("__parent__", based_int);
     }
-    explicit Int() : val(deps::BigInt(0)) {
+    explicit Int() : val(dep::BigInt(0)) {
         attrs.insert("__parent__", based_int);
     }
     [[nodiscard]] std::string to_string() const override {
@@ -245,12 +245,12 @@ public:
 
 class Rational : public Object {
 public:
-    deps::Rational val;
+    dep::Rational val;
 
     static constexpr ObjectType TYPE = ObjectType::OT_Rational;
     [[nodiscard]] ObjectType get_type() const override { return TYPE; }
 
-    explicit Rational(const deps::Rational& val) : val(val) {
+    explicit Rational(const dep::Rational& val) : val(val) {
         attrs.insert("__parent__", based_rational);
     }
     [[nodiscard]] std::string to_string() const override {
@@ -279,13 +279,13 @@ public:
     static constexpr ObjectType TYPE = ObjectType::OT_Dictionary;
     [[nodiscard]] ObjectType get_type() const override { return TYPE; }
 
-    explicit Dictionary(const deps::HashMap<Object*>& attrs_input){
+    explicit Dictionary(const dep::HashMap<Object*>& attrs_input){
         attrs = attrs_input;
         attrs.insert("__parent__", based_dict);
     }
     explicit Dictionary() {
         attrs.insert("__parent__", based_dict);
-        attrs = deps::HashMap<Object*>{};
+        attrs = dep::HashMap<Object*>{};
     }
 
     [[nodiscard]] std::string to_string() const override {
@@ -335,7 +335,7 @@ public:
     }
 };
 
-inline deps::HashMap<Object*> std_modules;
+inline dep::HashMap<Object*> std_modules;
 
 void registering_std_modules();
 

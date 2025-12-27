@@ -50,7 +50,7 @@ Token Parser::curr_token() const {
     if (curr_tok_idx_ < tokens_.size()) {
         return tokens_.at(curr_tok_idx_);
     }
-    return Token{TokenType::EndOfFile, "", 0, 0};
+    return Token{TokenType::EndOfFile, "", 1, 1};
 }
 
 // skip_end_of_ln实现
@@ -118,7 +118,7 @@ std::unique_ptr<BlockStmt> Parser::parse(const std::vector<Token>& tokens) {
     }
 
     DEBUG_OUTPUT("end parsing");
-    constexpr err::PositionInfo pos = {0, 0, 0, 0};
+    constexpr err::PositionInfo pos = {1, 1, 1, 1};
     return std::make_unique<BlockStmt>(pos, std::move(program_stmts));
 }
 

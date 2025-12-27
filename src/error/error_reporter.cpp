@@ -38,7 +38,9 @@ void context_printer(
     // 获取错误行代码
     std::string error_line = get_slice(src_path, src_line_start, src_line_end);
     if (error_line.empty()) {
-        error_line = "[Can't slice the source file]";
+        error_line = "[Can't slice the source file with "
+        + std::to_string(src_line_start) + "," + std::to_string(src_line_start)
+        + "," + std::to_string(src_col_start) + "," + std::to_string(src_col_end) + "]";
     }
 
     // 计算箭头位置：行号前缀长度 + 列偏移（列从1开始）
@@ -71,10 +73,11 @@ void error_reporter(const std::string& src_path, const PositionInfo& pos, const 
 
 
 void traceback_reporter(
-    const deps::HashMap<PositionInfo&>& positions,
+    const std::vector<std::pair<std::string, PositionInfo>>& positions,
     const ErrorInfo& error
 ) {
-    for (const auto& [src_path, pos] : positions.to_vector()) {
+    std::cout << Color::BRIGHT_RED << "\nTrace Back: " << Color::RESET << std::endl;
+    for (const auto& [src_path, pos] : positions) {
         context_printer(src_path, pos);
     }
     // 错误信息（类型加粗红 + 内容白）

@@ -77,15 +77,17 @@ void Vm::call_function(model::Object* func_obj, model::Object* args_obj, model::
         }
 
         // 创建新调用帧
+
         auto new_frame = std::make_unique<CallFrame>(
              func->name,
 
              func,   // owner
-             deps::HashMap<model::Object*>(), // 初始空局部变量表
+             dep::HashMap<model::Object*>(), // 初始空局部变量表
 
             0,                               // 程序计数器初始化为0（从第一条指令开始执行）
             call_stack_.back()->pc + 1,   // 执行完所有指令后返回的位置（指令池末尾）
-            func->code                 // 关联当前模块的CodeObject
+            func->code,                 // 关联当前模块的CodeObject
+            call_stack_.back()->code_object->code[call_stack_.back()->pc].pos
         );
 
         // 储存self
@@ -152,7 +154,6 @@ void Vm::exec_CALL(const Instruction& instruction) {
 
     DEBUG_OUTPUT("弹出函数对象: " + func_obj->to_string());
     DEBUG_OUTPUT("弹出参数列表: " + args_obj->to_string());
-
     call_function(func_obj, args_obj);
 
 }
@@ -184,7 +185,6 @@ void Vm::exec_CALL_METHOD(const Instruction& instruction) {
     func_obj->make_ref();
 
     DEBUG_OUTPUT("获取函数对象: " + func_obj->to_string());
-
     call_function(func_obj, args_obj, obj);
 
 }

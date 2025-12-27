@@ -7,16 +7,16 @@ namespace model {
 // Int.__call__
 model::Object* int_call(model::Object* self, const model::List* args) {
     auto a = builtin::get_one_arg(args);
-    deps::BigInt val(0);
-    if (auto s = dynamic_cast<String*>(a)) val = deps::BigInt(s->val);
-    else if (!kiz::Vm::check_obj_is_true(a)) val = deps::BigInt(0);
+    dep::BigInt val(0);
+    if (auto s = dynamic_cast<String*>(a)) val = dep::BigInt(s->val);
+    else if (!kiz::Vm::check_obj_is_true(a)) val = dep::BigInt(0);
     return new model::Int(val);
 }
 
 // Int.__bool__
 model::Object* int_bool(model::Object* self, const model::List* args) {
     const auto self_int = dynamic_cast<Int*>(self);
-    if (self_int->val == deps::BigInt(0)) return new model::Bool(false);
+    if (self_int->val == dep::BigInt(0)) return new model::Bool(false);
     return new model::Bool(true);
 }
 
@@ -33,7 +33,7 @@ model::Object* int_add(model::Object* self, const model::List* args) {
     }
     auto another_rational = dynamic_cast<Rational*>(args->val[0]);
     if (another_rational) {
-        const auto left_rational = deps::Rational(self_int->val,deps::BigInt(1));
+        const auto left_rational = dep::Rational(self_int->val,dep::BigInt(1));
         return new Rational(left_rational + another_rational->val);
     }
     assert(false && "function Int.add second arg need be Rational or Int");
@@ -51,7 +51,7 @@ model::Object* int_sub(model::Object* self, const model::List* args) {
     }
     auto another_rational = dynamic_cast<Rational*>(args->val[0]);
     if (another_rational) {
-        const auto left_rational = deps::Rational(self_int->val,deps::BigInt(1));
+        const auto left_rational = dep::Rational(self_int->val,dep::BigInt(1));
         return new Rational(left_rational - another_rational->val);
     }
     assert(false && "function Int.sub second arg need be Rational or Int");
@@ -69,7 +69,7 @@ model::Object* int_mul(model::Object* self, const model::List* args) {
     }
     auto another_rational = dynamic_cast<Rational*>(args->val[0]);
     if (another_rational) {
-        const auto left_rational = deps::Rational(self_int->val,deps::BigInt(1));
+        const auto left_rational = dep::Rational(self_int->val,dep::BigInt(1));
         return new Rational(left_rational * another_rational->val);
     }
     assert(false && "function Int.mul second arg need be Rational or Int");
@@ -87,7 +87,7 @@ model::Object* int_div(model::Object* self, const model::List* args) {
     }
     auto another_rational = dynamic_cast<Rational*>(args->val[0]);
     if (another_rational) {
-        const auto left_rational = deps::Rational(self_int->val,deps::BigInt(1));
+        const auto left_rational = dep::Rational(self_int->val,dep::BigInt(1));
         return new Rational(left_rational / another_rational->val);
     }
     assert(false && "function Int.div second arg need be Rational or Int");
@@ -107,18 +107,18 @@ model::Object* int_pow(model::Object* self, const model::List* args) {
 model::Object* int_mod(model::Object* self, const model::List* args) {
     DEBUG_OUTPUT("You given " + std::to_string(args->val.size()) + " arguments (int_mod)");
     assert(args->val.size() == 1 && "function Int.mod need 1 arg");
-    assert(dynamic_cast<Int*>(args->val[0])->val != deps::BigInt(0) && "mod by zero");
+    assert(dynamic_cast<Int*>(args->val[0])->val != dep::BigInt(0) && "mod by zero");
     
     auto self_int = dynamic_cast<Int*>(self);
     auto another_int = dynamic_cast<Int*>(args->val[0]);
-    deps::BigInt remainder = self_int->val % another_int->val;
+    dep::BigInt remainder = self_int->val % another_int->val;
     // 修正余数符号（确保与除数同号）
-    if (remainder != deps::BigInt(0)
-        and self_int->val < deps::BigInt(0) != another_int->val < deps::BigInt(0)
+    if (remainder != dep::BigInt(0)
+        and self_int->val < dep::BigInt(0) != another_int->val < dep::BigInt(0)
     ) {
         remainder += another_int->val;
     }
-    return new Int(deps::BigInt(remainder));
+    return new Int(dep::BigInt(remainder));
 };
 
 // Int.__eq__ 相等判断：self == args[0]（返回Bool对象）
@@ -133,7 +133,7 @@ model::Object* int_eq(model::Object* self, const model::List* args) {
     }
     auto another_rational = dynamic_cast<Rational*>(args->val[0]);
     if (another_rational) {
-        const auto left_rational = deps::Rational(self_int->val,deps::BigInt(1));
+        const auto left_rational = dep::Rational(self_int->val,dep::BigInt(1));
         return new Bool(left_rational == another_rational->val);
     }
     assert(false && "function Int.eq second arg need be Rational or Int");
@@ -151,7 +151,7 @@ model::Object* int_lt(model::Object* self, const model::List* args) {
     }
     auto another_rational = dynamic_cast<Rational*>(args->val[0]);
     if (another_rational) {
-        const auto left_rational = deps::Rational(self_int->val,deps::BigInt(1));
+        const auto left_rational = dep::Rational(self_int->val,dep::BigInt(1));
         return new Bool(left_rational < another_rational->val);
     }
     assert(false && "function Int.lt second arg need be Rational or Int");
@@ -169,7 +169,7 @@ model::Object* int_gt(model::Object* self, const model::List* args) {
     }
     auto another_rational = dynamic_cast<Rational*>(args->val[0]);
     if (another_rational) {
-        const auto left_rational = deps::Rational(self_int->val,deps::BigInt(1));
+        const auto left_rational = dep::Rational(self_int->val,dep::BigInt(1));
         return new Bool(left_rational > another_rational->val);
     }
     assert(false && "function Int.gt second arg need be Rational or Int");

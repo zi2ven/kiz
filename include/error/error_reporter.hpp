@@ -35,7 +35,7 @@ void error_reporter(
 );
 
 void traceback_reporter(
-    const deps::HashMap<PositionInfo&>& positions,
+    const std::vector<std::pair<std::string, PositionInfo>>& positions,
     const ErrorInfo& error
 );
 

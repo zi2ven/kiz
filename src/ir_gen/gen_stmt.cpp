@@ -10,7 +10,7 @@ model::Module* IRGenerator::gen_mod(
     const std::string& module_name,
     model::CodeObject* module_code
 ) {
-    DEBUG_OUTPUT("code object created with code list len " + std::to_string(code_list.size()));
+    DEBUG_OUTPUT("code object created with code list len " + std::to_string(module_code->code.size()));
     assert(module_code != nullptr);
     const auto module_obj = new model::Module(
         module_name,

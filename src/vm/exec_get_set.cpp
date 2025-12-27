@@ -27,7 +27,7 @@ void Vm::exec_LOAD_VAR(const Instruction& instruction) {
     std::string var_name = call_stack_.back()->code_object->names[name_idx];
     
     // 遍历调用栈
-    std::shared_ptr<deps::HashMap<model::Object*>::Node> var_it;
+    std::shared_ptr<dep::HashMap<model::Object*>::Node> var_it;
     assert(!call_stack_.empty());
     for (auto frame_it = call_stack_.rbegin(); frame_it != call_stack_.rend(); ++frame_it) {
         const CallFrame* curr_frame = (*frame_it).get();

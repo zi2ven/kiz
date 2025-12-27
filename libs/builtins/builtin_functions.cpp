@@ -53,6 +53,7 @@ model::Object* breakpoint(model::Object* self, const model::List* args) {
         auto locals_vector = frame->locals.to_vector();
         for (const auto& [n, l] : locals_vector) {
             std::cout << n << " = " << l->to_string();
+            if (j<locals_vector.size()) std::cout << ", ";
             ++j;
         }
         
@@ -70,7 +71,7 @@ model::Object* breakpoint(model::Object* self, const model::List* args) {
         j = 1;
         for (const auto c: frame->code_object->consts) {
             std::cout << c;
-            if (j<frame->code_object->names.size()) std::cout << ", ";
+            if (j<frame->code_object->consts.size()) std::cout << ", ";
             ++j;
         }
         std::cout << "\n\n";
@@ -99,7 +100,7 @@ model::Object* now(model::Object* self, const model::List* args) {
     using namespace std::chrono;
     auto now = high_resolution_clock::now().time_since_epoch();
     int64_t time = duration_cast<nanoseconds>(now).count();
-    return new model::Int( deps::BigInt(std::to_string(time)) );
+    return new model::Int( dep::BigInt(std::to_string(time)) );
 };
 
 model::Object* setattr(model::Object* self, const model::List* args) {
@@ -119,7 +120,7 @@ model::Object* delattr(model::Object* self, const model::List* args) {
 
 model::Object* get_refc(model::Object* self, const model::List* args) {
     const auto obj = get_one_arg(args);
-    return new model::Int( deps::BigInt(obj->get_refc_()) );
+    return new model::Int( dep::BigInt(obj->get_refc_()) );
 };
 
 model::Object* copy(model::Object* self, const model::List* args) {

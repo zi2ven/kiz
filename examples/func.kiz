@@ -5,6 +5,9 @@ fn a
         fn c
             nonlocal m = 100
             global n = 99
+            aa = 0
+            bb = ""
+            breakpoint()
         end
         c()
     end

@@ -15,6 +15,7 @@ namespace kiz {
 std::unique_ptr<BlockStmt> Parser::parse_block(TokenType endswith) {
     DEBUG_OUTPUT("parsing block (with end)");
     std::vector<std::unique_ptr<Statement>> block_stmts;
+    auto block_tok = curr_token();
 
     while (curr_tok_idx_ < tokens_.size()) {
         const Token& curr_tok = curr_token();
@@ -32,7 +33,7 @@ std::unique_ptr<BlockStmt> Parser::parse_block(TokenType endswith) {
         }
     }
 
-    return std::make_unique<BlockStmt>(curr_token().pos, std::move(block_stmts));
+    return std::make_unique<BlockStmt>(block_tok.pos, std::move(block_stmts));
 }
 
 // parse_if实现
@@ -44,6 +45,7 @@ std::unique_ptr<IfStmt> Parser::parse_if() {
 
     // 解析if体（无end的块）
     skip_start_of_block();
+    auto if_tok = curr_token();
     auto if_block = parse_block(TokenType::Else);
 
     // 处理else分支
@@ -66,7 +68,7 @@ std::unique_ptr<IfStmt> Parser::parse_if() {
         skip_token("end");
     }
 
-    return std::make_unique<IfStmt>(curr_token().pos, std::move(cond_expr), std::move(if_block), std::move(else_block));
+    return std::make_unique<IfStmt>(if_tok.pos, std::move(cond_expr), std::move(if_block), std::move(else_block));
 }
 
 // parse_stmt实现
@@ -122,7 +124,7 @@ std::unique_ptr<Statement> Parser::parse_stmt() {
         skip_token("end");
 
         // 生成函数定义语句节点
-        return std::make_unique<AssignStmt>(curr_token().pos,  func_name, std::make_unique<FnDeclExpr>(
+        return std::make_unique<AssignStmt>(tok.pos,  func_name, std::make_unique<FnDeclExpr>(
             tok.pos,
             func_name,
             std::move(func_params),

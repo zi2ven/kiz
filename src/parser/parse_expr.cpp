@@ -146,22 +146,27 @@ std::unique_ptr<Expression> Parser::parse_factor() {
 
     while (true) {
         if (curr_token().type == TokenType::Dot) {
+            auto tok = curr_token();
+
             skip_token(".");
-            auto child = std::make_unique<IdentifierExpr>(curr_token().pos, skip_token().text);
-            node = std::make_unique<GetMemberExpr>(curr_token().pos, std::move(node),std::move(child));
+            auto child = std::make_unique<IdentifierExpr>(tok.pos, skip_token().text);
+            node = std::make_unique<GetMemberExpr>(tok.pos, std::move(node),std::move(child));
 
         }
         else if (curr_token().type == TokenType::LBracket) {
+            auto tok = curr_token();
+
             skip_token("[");
             auto param = parse_args(TokenType::RBracket);
             skip_token("]");
-            node = std::make_unique<GetItemExpr>(curr_token().pos, std::move(node),std::move(param));
+            node = std::make_unique<GetItemExpr>(tok.pos, std::move(node),std::move(param));
         }
         else if (curr_token().type == TokenType::LParen) {
+            auto tok = curr_token();
             skip_token("(");
             auto param = parse_args(TokenType::RParen);
             skip_token(")");
-            node = std::make_unique<CallExpr>(curr_token().pos, std::move(node),std::move(param));
+            node = std::make_unique<CallExpr>(tok.pos, std::move(node),std::move(param));
         }
         else break;
     }

@@ -55,9 +55,10 @@ std::string get_slice(const std::string& src_path, const int& src_line_start, co
     const size_t total_lines = lines.size();
     if (src_line_start < 1 || src_line_end < 1 || 
         src_line_start > src_line_end || 
-        static_cast<size_t>(src_line_end) > total_lines) {
-        std::cerr << "[Warning] Invalid line range: start=" << src_line_start 
-                  << ", end=" << src_line_end << " (total lines: " << total_lines << ")\n";
+        static_cast<size_t>(src_line_end) > total_lines
+    ) {
+        // std::cerr << "[Warning] Invalid line range: start=" << src_line_start
+        //          << ", end=" << src_line_end << " (total lines: " << total_lines << ")\n";
         return "";
     }
 

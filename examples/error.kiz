@@ -1,0 +1,10 @@
+fn m
+    # 使其报错
+    print(k)
+end
+
+fn a
+    m()
+end
+
+a()

@@ -45,11 +45,11 @@ model::Object* str_mul(model::Object* self, const model::List* args) {
     
     auto times_int = dynamic_cast<Int*>(args->val[0]);
     assert(times_int != nullptr && "String.mul only supports Int type argument");
-    assert(times_int->val >= deps::BigInt(0) && "String.mul requires non-negative integer argument");
+    assert(times_int->val >= dep::BigInt(0) && "String.mul requires non-negative integer argument");
     
     std::string result;
-    deps::BigInt times = times_int->val;
-    for (deps::BigInt i = deps::BigInt(0); i < times; i+=deps::BigInt(1)) {
+    dep::BigInt times = times_int->val;
+    for (dep::BigInt i = dep::BigInt(0); i < times; i+=dep::BigInt(1)) {
         result += self_str->val;
     }
     

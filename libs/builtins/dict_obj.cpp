@@ -16,7 +16,7 @@ model::Object* dict_add(model::Object* self, const model::List* args) {
     Object* value_obj = args->val[1];
     
     // 复制原字典的attrs（返回新字典）
-    deps::HashMap<Object*> new_attrs = self_dict->attrs;
+    dep::HashMap<Object*> new_attrs = self_dict->attrs;
     // 插入新键值对
     new_attrs.insert(key_obj->val, value_obj);
     

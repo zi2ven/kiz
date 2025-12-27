@@ -92,7 +92,7 @@ model::CodeObject* IRGenerator::make_code_obj() const {
 model::Int* IRGenerator::make_int_obj(const NumberExpr* num_expr) {
     DEBUG_OUTPUT("making int object...");
     assert(num_expr && "make_int_obj: 数字节点为空");
-    auto int_obj = new model::Int( deps::BigInt(num_expr->value) );
+    auto int_obj = new model::Int( dep::BigInt(num_expr->value) );
     return int_obj;
 }
 
@@ -100,21 +100,21 @@ model::Int* IRGenerator::make_int_obj(const NumberExpr* num_expr) {
 model::Rational* IRGenerator::make_rational_obj(NumberExpr* num_expr) {
     DEBUG_OUTPUT("making rational object...");
     assert(num_expr && "make_rational_obj: 数字节点为空");
-    deps::Rational rational;
+    dep::Rational rational;
 
     // 简化：假设有理数为分数形式（如"3/4"），分割分子分母
     const auto slash_pos = num_expr->value.find('/');
     if (slash_pos == std::string::npos) {
         // 整数形式（分母为1）
-        rational.numerator = deps::BigInt(num_expr->value);
-        rational.denominator = deps::BigInt(1);
+        rational.numerator = dep::BigInt(num_expr->value);
+        rational.denominator = dep::BigInt(1);
     } else {
         std::string num_str = num_expr->value.substr(0, slash_pos);
         std::string den_str = num_expr->value.substr(slash_pos + 1);
-        rational.numerator = deps::BigInt(num_str);
-        rational.denominator = deps::BigInt(den_str);
+        rational.numerator = dep::BigInt(num_str);
+        rational.denominator = dep::BigInt(den_str);
         // 简化：不处理分母为0的情况（实际需断言）
-        assert(rational.denominator != deps::BigInt(0) && "make_rational_obj: 分母为0");
+        assert(rational.denominator != dep::BigInt(0) && "make_rational_obj: 分母为0");
     }
     auto rational_obj = new model::Rational(rational);
     return rational_obj;

@@ -16,7 +16,7 @@
 #include <utility>
 #include <vector>
 
-namespace deps {
+namespace dep {
 
 class BigInt {
     std::vector<uint8_t> digits_; // 逆序存储（低位在前），每个元素 0-9
@@ -498,4 +498,4 @@ public:
     }
 };
 
-} // namespace deps
+} // namespace dep

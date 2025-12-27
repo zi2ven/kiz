@@ -42,11 +42,11 @@ model::Object* list_mul(model::Object* self, const model::List* args) {
     
     auto times_int = dynamic_cast<Int*>(args->val[0]);
     assert(times_int != nullptr && "List.mul only supports Int type argument");
-    assert(times_int->val >= deps::BigInt(0) && "List.mul requires non-negative integer argument");
+    assert(times_int->val >= dep::BigInt(0) && "List.mul requires non-negative integer argument");
     
     std::vector<Object*> new_vals;
-    deps::BigInt times = times_int->val;
-    for (deps::BigInt i = deps::BigInt(0); i < times; i+=deps::BigInt(1)) {
+    dep::BigInt times = times_int->val;
+    for (dep::BigInt i = dep::BigInt(0); i < times; i+=dep::BigInt(1)) {
         new_vals.insert(new_vals.end(), self_list->val.begin(), self_list->val.end());
     }
     

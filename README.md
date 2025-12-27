@@ -30,12 +30,12 @@ True Nil False
     - ~~**feature[急需的]** 添加支持TraceBack的报错器~~
     - ~~**feature[急需的]** 通过kiz::Position(已经在kiz.hpp定义了这个结构体)这个结构体来储存token, ast, instruction的位置信息~~
     - ~~**test[急需的]** 测试nonlocal和global语句, lambda定义和and/or/not~~
+    - ~~- **feature** 完成注释功能~~
 
     **近期的**
     - **feature** 完成 >= <= != (通过添加操作指令OP_GE, OP_LE, OP_NE)
     - **feature** 完成所有builtin函数
     - **feature** 实现完整oop语法(语句用法见examples/oop.kiz)
-    - **feature** 完成注释功能
     - **feature(maybe has big change)** 所有报错使用util::err_reporter函数代替现在临时的assert
     - **fixme(maybe has big change)** 统一报错和DEBUG信息和输出信息为标准英文
     - **feature(maybe has big change)** Object->to_string改为各对象模型的魔术方法(`__str__`和`__repr__`)并为list添加`copy`方法
