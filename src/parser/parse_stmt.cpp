@@ -83,20 +83,20 @@ std::unique_ptr<Statement> Parser::parse_stmt() {
     // 解析while语句（适配end结尾）
     if (curr_tok.type == TokenType::While) {
         DEBUG_OUTPUT("parsing while");
-        skip_token("while");
+        auto tok = skip_token("while");
         // 解析循环条件表达式
         auto cond_expr = parse_expression();
         assert(cond_expr != nullptr);
         skip_start_of_block();
         auto while_block = parse_block();
         skip_token("end");
-        return std::make_unique<WhileStmt>(curr_token().pos, std::move(cond_expr), std::move(while_block));
+        return std::make_unique<WhileStmt>(tok.pos, std::move(cond_expr), std::move(while_block));
     }
 
     // 解析函数定义（新语法：fn x() end）
     if (curr_tok.type == TokenType::Func) {
         DEBUG_OUTPUT("parsing function");
-        skip_token("fn");
+        auto tok = skip_token("fn");
         // 读取函数名
         const std::string func_name = skip_token().text;
 
@@ -123,7 +123,7 @@ std::unique_ptr<Statement> Parser::parse_stmt() {
 
         // 生成函数定义语句节点
         return std::make_unique<AssignStmt>(curr_token().pos,  func_name, std::make_unique<FnDeclExpr>(
-            curr_token().pos,
+            tok.pos,
             func_name,
             std::move(func_params),
             std::move(func_body)
@@ -134,60 +134,60 @@ std::unique_ptr<Statement> Parser::parse_stmt() {
     // 解析return语句
     if (curr_tok.type == TokenType::Return) {
         DEBUG_OUTPUT("parsing return");
-        skip_token("return");
+        auto tok = skip_token("return");
         // return后可跟表达式（也可无，视为返回nil）
         std::unique_ptr<Expression> return_expr = parse_expression();
         skip_end_of_ln();
-        return std::make_unique<ReturnStmt>(curr_token().pos, std::move(return_expr));
+        return std::make_unique<ReturnStmt>(tok.pos, std::move(return_expr));
     }
 
     // 解析break语句
     if (curr_tok.type == TokenType::Break) {
         DEBUG_OUTPUT("parsing break");
-        skip_token("break");
+        auto tok = skip_token("break");
         skip_end_of_ln();
-        return std::make_unique<BreakStmt>(curr_token().pos);
+        return std::make_unique<BreakStmt>(tok.pos);
     }
 
     // 解析continue语句
     if (curr_tok.type == TokenType::Next) {
         DEBUG_OUTPUT("parsing next");
-        skip_token("next");
+        auto tok = skip_token("next");
         skip_end_of_ln();
-        return std::make_unique<NextStmt>(curr_token().pos);
+        return std::make_unique<NextStmt>(tok.pos);
     }
 
     // 解析import语句
     if (curr_tok.type == TokenType::Import) {
         DEBUG_OUTPUT("parsing import");
-        skip_token("import");
+        auto tok = skip_token("import");
         // 读取模块路径
         const std::string import_path = skip_token().text;
 
         skip_end_of_ln();
-        return std::make_unique<ImportStmt>(curr_token().pos, import_path);
+        return std::make_unique<ImportStmt>(tok.pos, import_path);
     }
 
     // 解析nonlocal语句
     if (curr_tok.type == TokenType::Nonlocal) {
         DEBUG_OUTPUT("parsing nonlocal");
-        skip_token("nonlocal");
+        auto tok = skip_token("nonlocal");
         const std::string name = skip_token().text;
         skip_token("=");
         std::unique_ptr<Expression> expr = parse_expression();
         skip_end_of_ln();
-        return std::make_unique<NonlocalAssignStmt>(curr_token().pos, name, std::move(expr));
+        return std::make_unique<NonlocalAssignStmt>(tok.pos, name, std::move(expr));
     }
 
     // 解析global语句
     if (curr_tok.type == TokenType::Global) {
         DEBUG_OUTPUT("parsing global");
-        skip_token("global");
+        auto tok = skip_token("global");
         const std::string name = skip_token().text;
         skip_token("=");
         std::unique_ptr<Expression> expr = parse_expression();
         skip_end_of_ln();
-        return std::make_unique<GlobalAssignStmt>(curr_token().pos, name, std::move(expr));
+        return std::make_unique<GlobalAssignStmt>(tok.pos, name, std::move(expr));
     }
 
     // 解析赋值语句（x = expr;）
@@ -196,11 +196,11 @@ std::unique_ptr<Statement> Parser::parse_stmt() {
         and tokens_[curr_tok_idx_ + 1].type == TokenType::Assign
     ) {
         DEBUG_OUTPUT("parsing assign");
-        const auto name = skip_token().text;
+        const auto name_tok = skip_token();
         skip_token("=");
         auto expr = parse_expression();
         skip_end_of_ln();
-        return std::make_unique<AssignStmt>(curr_token().pos, name, std::move(expr));
+        return std::make_unique<AssignStmt>(name_tok.pos, name_tok.text, std::move(expr));
     }
 
 
