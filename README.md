@@ -6,10 +6,10 @@
 - 🔅 语法极简：关键字集高度精简，仅包含：
 ```kiz
 if else while break next
-fn end object import
+fn end import
 try catch throw 
-nonlocal global 
-is not or in and
+nonlocal global
+is not or and in
 True Nil False
 ```
 - ✅ 规范友好：中文注释+统一命名规范
@@ -25,14 +25,14 @@ True Nil False
     - ~~**feature** 实现call method~~
     - ~~**feature** 完成 and not or in运算符(在vm中要支持判断model::Bool, 如果对象不是model::Bool, 需尝试调用Object.__bool__魔术方法)~~
     - ~~**fixme[急需的]** if, while 语句的跳转问题~~
+    - ~~**feature** 实现next, break~~
     -- ~~**feature[急需的]** 实现oop支持~~
+    - ~~**feature[急需的]** 添加支持TraceBack的报错器~~
+    - ~~**feature[急需的]** 通过kiz::Position(已经在kiz.hpp定义了这个结构体)这个结构体来储存token, ast, instruction的位置信息~~
+    - ~~**test[急需的]** 测试nonlocal和global语句, lambda定义和and/or/not~~
 
     **近期的**
-    - **feature[急需的]** 添加支持TraceBack的报错器
-    - **feature[急需的]** 通过kiz::Position(已经在kiz.hpp定义了这个结构体)这个结构体来储存token, ast, instruction的位置信息(就差ast了)
-    - **test[急需的]** 测试nonlocal和global语句, lambda定义和and/or/not
-    - **feature[急需的]** 完成 >= <= (通过添加操作指令OP_GE, OP_LE)
-
+    - **feature** 完成 >= <= != (通过添加操作指令OP_GE, OP_LE, OP_NE)
     - **feature** 完成所有builtin函数
     - **feature** 实现完整oop语法(语句用法见examples/oop.kiz)
     - **feature** 完成注释功能
@@ -45,3 +45,4 @@ True Nil False
     - **feature** 完善builtins object的, `__getitem__`, `__setitem__`, `__str__`, `__repr__`这些魔术方法, 同时支持用户定义的魔术方法
     - **feature** 完成for语句
     - **feature** 完成try-catch throw语句
+    - **faeture** 完成管道运算符
