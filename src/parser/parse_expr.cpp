@@ -177,22 +177,22 @@ std::unique_ptr<Expression> Parser::parse_primary() {
     DEBUG_OUTPUT("parsing primary...");
     const auto tok = skip_token();
     if (tok.type == TokenType::Number) {
-        return std::make_unique<NumberExpr>(curr_token().pos, tok.text);
+        return std::make_unique<NumberExpr>(tok.pos, tok.text);
     }
     if (tok.type == TokenType::String) {
-        return std::make_unique<StringExpr>(curr_token().pos, tok.text);
+        return std::make_unique<StringExpr>(tok.pos, tok.text);
     }
     if (tok.type == TokenType::Nil) {
-        return std::make_unique<NilExpr>(curr_token().pos);
+        return std::make_unique<NilExpr>(tok.pos);
     }
     if (tok.type == TokenType::True) {
-        return std::make_unique<BoolExpr>(curr_token().pos, true);
+        return std::make_unique<BoolExpr>(tok.pos, true);
     }
     if (tok.type == TokenType::False) {
-        return std::make_unique<BoolExpr>(curr_token().pos, false);
+        return std::make_unique<BoolExpr>(tok.pos, false);
     }
     if (tok.type == TokenType::Identifier) {
-        return std::make_unique<IdentifierExpr>(curr_token().pos, tok.text);
+        return std::make_unique<IdentifierExpr>(tok.pos, tok.text);
     }
     if (tok.type == TokenType::Func) {
         // 解析参数列表（()包裹，逻辑不变）

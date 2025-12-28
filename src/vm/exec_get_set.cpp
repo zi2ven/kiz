@@ -13,7 +13,8 @@ model::Object* Vm::get_attr(const model::Object* obj, const std::string& attr_na
 
     if (parent_it != nullptr) return get_attr(parent_it->value, attr_name);
     
-    assert(false && ("GET_ATTR: 对象无此属性: "+attr_name).c_str());
+    throw_error({"NameError", "Undefined attribute '"+attr_name+"'"});
+    return nullptr;
 }
 
 // -------------------------- 变量操作 --------------------------
@@ -54,7 +55,7 @@ void Vm::exec_LOAD_VAR(const Instruction& instruction) {
             auto var_it = owner_module->attrs.find(var_name);
 
         }
-        else throw_error({"NameError", "Undefined var '"+var_name+"'"});
+        else throw_error({"NameError", "Undefined variable '"+var_name+"'"});
     }
 
     model::Object* var_val = var_it->value;
@@ -151,7 +152,7 @@ void Vm::exec_SET_NONLOCAL(const Instruction& instruction) {
     }
 
     if (!target_frame) {
-        assert(false && "SET_NONLOCAL: 未找到非局部变量");
+        throw_error({"NameError", "Undefined variable '"+var_name+"'"});
     }
 
     model::Object* var_val = op_stack_.top();

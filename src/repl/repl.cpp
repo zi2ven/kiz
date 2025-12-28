@@ -14,8 +14,15 @@
 #include "parser.hpp"
 #include "kiz.hpp"
 #include "repl/color.hpp"
+#include "util/src_manager.hpp"
 
 namespace ui {
+
+const std::string Repl::file_path = "<shell#>";
+
+Repl::Repl(): is_running_(true) , vm_(file_path) {
+    std::cout << "This is the kiz REPL " << KIZ_VERSION << "\n" << std::endl;
+}
 
 std::string Repl::read(const std::string& prompt) {
     std::string result;
@@ -30,6 +37,13 @@ void Repl::loop() {
     while (is_running_) {
         try {
             auto code = read(">>>");
+            auto old_code_it = err::opened_files.find(file_path);
+            if (old_code_it != err::opened_files.end()) {
+                err::opened_files[file_path] = old_code_it->second + "\n" + code;
+            } else {
+                err::opened_files[file_path] = code;
+            }
+
             add_to_history(code);
             eval_and_print(code);
         } catch (KizStopRunningSignal& e) {
@@ -42,7 +56,6 @@ void Repl::loop() {
 
 void Repl::eval_and_print(const std::string& cmd) {
     DEBUG_OUTPUT("repl eval_and_print...");
-    const std::string file_path = "<shell#>";
     bool should_print = false;
     kiz::Lexer lexer(file_path);
     kiz::Parser parser(file_path);

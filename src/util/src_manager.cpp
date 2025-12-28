@@ -20,6 +20,8 @@
 #include <unordered_map>
 #include <vector>
 
+#include "kiz.hpp"
+
 namespace err {
 
 // 全局互斥锁：保证多线程下对opened_files的安全访问
@@ -84,7 +86,7 @@ std::string get_slice(const std::string& src_path, const int& src_line_start, co
  */
 std::string get_file_by_path(const std::string& path) {
     // 加锁保证多线程下缓存操作的原子性
-    std::lock_guard<std::mutex> lock(opened_files_mutex);
+    std::lock_guard lock(opened_files_mutex);
 
     // 检查缓存是否已存在该文件
     auto iter = opened_files.find(path);
@@ -108,7 +110,7 @@ std::string open_new_file(const std::string& path) {
     // 以文本模式打开文件（自动处理换行符转换，避免二进制模式的乱码问题）
     std::ifstream kiz_file(path, std::ios::in | std::ios::binary);
     if (!kiz_file.is_open()) {
-        throw std::runtime_error("Failed to open kiz file: " + path + 
+        throw KizStopRunningSignal("Failed to open kiz file: " + path +
                                  " (reason: " + std::strerror(errno) + ")");
     }
 
@@ -116,7 +118,7 @@ std::string open_new_file(const std::string& path) {
     std::string file_content;
     // 调整流缓冲区大小以优化大文件读取
     kiz_file.seekg(0, std::ios::end);
-    file_content.reserve(static_cast<size_t>(kiz_file.tellg()));
+    file_content.reserve(kiz_file.tellg());
     kiz_file.seekg(0, std::ios::beg);
 
     // 用迭代器读取全部字符（兼容空文件场景）

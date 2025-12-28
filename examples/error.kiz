@@ -1,10 +1,14 @@
-fn m
+fn c
     # 使其报错
     print(k)
 end
 
+fn b
+    c()
+end
+
 fn a
-    m()
+    b()
 end
 
 a()

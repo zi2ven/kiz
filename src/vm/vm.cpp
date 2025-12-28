@@ -271,7 +271,7 @@ void Vm::throw_error(const err::ErrorInfo& err) {
         if (i == call_stack_.size() - 1) {
             pos = frame->code_object->code.at(frame->pc).pos;
         } else {
-            pos = frame->code_object->code.at(frame->pc-1).pos
+            pos = frame->code_object->code.at(frame->pc-1).pos;
         }
         
         positions.emplace_back(path, pos);
