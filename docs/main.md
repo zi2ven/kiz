@@ -164,6 +164,35 @@ while i < 10
 end
 ```
 
+### 6. 错误处理
+```
+
+fn a()
+    throw Error("RuntimeError", "foo")
+end
+
+fn call_a()
+    try
+        a()
+     catch e : int # 故意使其匹配不到错误类型
+          print("666")
+     end
+end
+
+try
+    call_a()
+catch e: Error
+    print(e.k) # 故意使其报错
+end
+```
+
+### 7. for循环
+```
+a = [1,2,3]
+for item : a
+    print(str(item))
+end
+```
 
 ## 附录
 ### 1. 内置函数与对象
