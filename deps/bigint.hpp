@@ -157,7 +157,8 @@ class BigInt {
             return *this;
         }
         BigInt res = *this;
-        res.digits_.insert(res.digits_.begin(), k, 0); // 逆序左移=开头补0（对应10^k）
+        // 尾部补0：逆序存储下，末尾加0等价于乘以10^k
+        res.digits_.insert(res.digits_.end(), k, 0); 
         return res;
     }
 
@@ -344,16 +345,14 @@ public:
      * @brief 乘法运算符：符号单独处理，绝对值用Karatsuba算法计算
      */
     BigInt operator*(const BigInt& other) const {
-        // 特殊情况：有一个数为0 → 结果为0
         if ((digits_.size() == 1 && digits_[0] == 0) || (other.digits_.size() == 1 && other.digits_[0] == 0)) {
             return BigInt(0);
         }
 
         BigInt res;
-        // 符号：同号为正，异号为负（异或运算）
         res.is_negative_ = is_negative_ ^ other.is_negative_;
-        // 绝对值相乘（调用Karatsuba核心）
-        res = karatsuba_mul(*this, other);
+        // 传入绝对值计算
+        res = karatsuba_mul(this->abs(), other.abs()); 
         res.trim_leading_zeros();
         return res;
     }
