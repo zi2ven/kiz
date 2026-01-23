@@ -63,10 +63,6 @@ void Vm::exec_TRY_END(const Instruction& instruction) {
     call_stack.back()->pc = end_catch_pc;
 }
 
-void Vm::exec_CLEAN_ERROR(const Instruction& instruction) {
-    curr_error = nullptr;
-}
-
 void Vm::exec_IMPORT(const Instruction& instruction) {
     size_t name_idx = instruction.opn_list[0];
     std::string name = call_stack.back()->code_object->names[name_idx];
@@ -76,14 +72,7 @@ void Vm::exec_IMPORT(const Instruction& instruction) {
 
 void Vm::exec_LOAD_ERROR(const Instruction& instruction) {
     DEBUG_OUTPUT("loading curr error" + curr_error->to_string());
-    op_stack.push(curr_error);
-}
-
-void Vm::exec_SET_ERROR(const Instruction& instruction) {
-    auto a = op_stack.top();
-    op_stack.pop();
-    auto a_err = dynamic_cast<model::Error*>(a);
-    curr_error = a_err;
+    op_stack.emplace(curr_error);
 }
 
 
@@ -124,7 +113,6 @@ void Vm::exec_JUMP_IF_FALSE(const Instruction& instruction) {
         DEBUG_OUTPUT("need jump");
         CallFrame* curr_frame = call_stack.back().get();
         if (target_pc > curr_frame->code_object->code.size()) {
-            cond->del_ref();
             assert(false && "JUMP_IF_FALSE: 目标pc超出范围");
         }
         DEBUG_OUTPUT("JUMP_IF_FALSE: 跳转至 PC=" + std::to_string(target_pc));
@@ -132,63 +120,18 @@ void Vm::exec_JUMP_IF_FALSE(const Instruction& instruction) {
     } else {
         call_stack.back()->pc++;
     }
-
-    // 释放条件值引用
-    cond->del_ref();
 }
 
 // -------------------------- 异常处理 --------------------------
 void Vm::exec_THROW(const Instruction& instruction) {
     DEBUG_OUTPUT("exec throw...");
-    model::Object* top = op_stack.top();
+    auto* top = dynamic_cast<model::Error*>(op_stack.top());
+    assert(top != nullptr);
+    top->positions = gen_positions();
+    curr_error = top;
     op_stack.pop();
 
-    throw_error(top);
-}
-
-// -------------------------- 栈操作 --------------------------
-void Vm::exec_POP_TOP(const Instruction& instruction) {
-    DEBUG_OUTPUT("exec pop_top...");
-    if (op_stack.empty()) {
-        assert(false && "POP_TOP: 操作数栈为空");
-    }
-
-    model::Object* top = op_stack.top();
-    op_stack.pop();
-
-    if (top == nullptr) {
-        assert(false && "POP_TOP: 栈顶元素为nil（非法）");
-        return;
-    }
-
-    // 临时打印结果（验证是否正确）
-    DEBUG_OUTPUT("pop_top: 弹出结果 = " + top->to_string());
-
-    top->del_ref();
-}
-
-void Vm::exec_SWAP(const Instruction& instruction) {
-    DEBUG_OUTPUT("exec swap...");
-    if (op_stack.size() < 2) {
-        assert(false && "SWAP: 操作数栈元素不足（需≥2）");
-    }
-    model::Object* a = op_stack.top();
-    op_stack.pop();
-    model::Object* b = op_stack.top();
-    op_stack.pop();
-    op_stack.push(a);
-    op_stack.push(b);
-}
-
-
-void Vm::exec_COPY_TOP(const Instruction& instruction) {
-    DEBUG_OUTPUT("exec copy_top...");
-    if (op_stack.empty()) {
-        assert(false && "COPY_TOP: 操作数栈为空");
-    }
-    model::Object* top = op_stack.top();
-    top->make_ref();
-    op_stack.emplace(top);
+    throw_error();
 }
 
 void Vm::exec_STOP(const Instruction& instruction) {

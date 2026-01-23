@@ -1,5 +1,3 @@
-# 这段代码有问题: 引用计数错误导致堆结构错乱
-
 fn a()
     throw Error("RuntimeError", "foo")
 end
@@ -14,6 +12,8 @@ end
 
 try
     call_a()
+catch e: str
+    print("error is str")
 catch e: Error
     print(e.k) # 故意使其报错
 end

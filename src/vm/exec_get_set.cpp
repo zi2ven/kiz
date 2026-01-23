@@ -7,14 +7,20 @@ namespace kiz {
 
 model::Object* Vm::get_attr(const model::Object* obj, const std::string& attr_name) {
     if (obj == nullptr) assert(false && ("GET_ATTR: 对象无此属性: "+attr_name).c_str());
+    DEBUG_OUTPUT("finding attr it");
     const auto attr_it = obj->attrs.find(attr_name);
     auto parent_it = obj->attrs.find("__parent__");
-    if (attr_it != nullptr) return attr_it->value;
+    if (attr_it != nullptr) {
+        DEBUG_OUTPUT("found attr it");
+        return attr_it->value;
+    }
 
-    if (parent_it != nullptr) return get_attr(parent_it->value, attr_name);
+    if (parent_it != nullptr) {
+        DEBUG_OUTPUT("try to find it from parent");
+        return get_attr(parent_it->value, attr_name);
+    }
     
-    native_fn_throw("NameError", "Undefined attribute '"+attr_name+"'");
-    return nullptr;
+    throw NativeFuncError("NameError", "Undefined attribute '"+attr_name+"'");
 }
 
 // -------------------------- 变量操作 --------------------------
@@ -45,7 +51,6 @@ void Vm::exec_LOAD_VAR(const Instruction& instruction) {
         DEBUG_OUTPUT("var_name="+var_name);
         if (auto builtin_it = builtins.find(var_name)) {
             model::Object* builtin_val = builtin_it->value;
-            builtin_val->make_ref();
             op_stack.push(builtin_val);
             return;
         }
@@ -60,7 +65,7 @@ void Vm::exec_LOAD_VAR(const Instruction& instruction) {
                 return;
             }
         }
-        else native_fn_throw("NameError", "Undefined variable '"+var_name+"'");
+        else instruction_throw("NameError", "Undefined variable '"+var_name+"'");
     }
 
     model::Object* var_val = var_it->value;
@@ -157,7 +162,7 @@ void Vm::exec_SET_NONLOCAL(const Instruction& instruction) {
     }
 
     if (!target_frame) {
-        native_fn_throw("NameError", "Undefined variable '"+var_name+"'");
+        instruction_throw("NameError", "Undefined variable '"+var_name+"'");
         assert(false);
     }
 
@@ -183,9 +188,11 @@ void Vm::exec_GET_ATTR(const Instruction& instruction) {
         assert(false && "GET_ATTR: 属性名索引超出范围");
     }
     std::string attr_name = curr_frame->code_object->names[name_idx];
+    DEBUG_OUTPUT("attr name: " + attr_name);
+    DEBUG_OUTPUT("obj: " + obj->to_string());
 
     model::Object* attr_val = get_attr(obj, attr_name);
-    attr_val->make_ref();
+    DEBUG_OUTPUT("attr val: " + attr_val->to_string());
     op_stack.push(attr_val);
 }
 

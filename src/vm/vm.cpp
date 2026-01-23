@@ -213,9 +213,13 @@ void Vm::exec_curr_code() {
 
         // 执行当前指令
         const Instruction& curr_inst = curr_frame.code_object->code[curr_frame.pc];
-        execute_instruction(curr_inst);
+        try {
+            execute_instruction(curr_inst);
+        } catch (NativeFuncError& e) {
+            instruction_throw(e.name, e.msg);
+        }
         DEBUG_OUTPUT("curr inst is "+opcode_to_string(curr_inst.opc));
-        DEBUG_OUTPUT("current stack top : " + (op_stack.empty() ? " " : op_stack.top()->to_string()));
+        DEBUG_OUTPUT("current stack top : " + (op_stack.empty() ? "[Nothing]" : op_stack.top()->to_string()));
 
         // 修正PC自增条件：仅非跳转/非RET指令自增
         if (curr_inst.opc != Opcode::JUMP && curr_inst.opc != Opcode::JUMP_IF_FALSE && curr_inst.opc != Opcode::RET) {
@@ -301,7 +305,7 @@ std::vector<std::pair<std::string, err::PositionInfo>> Vm::gen_positions() {
     return positions;
 }
 
-void Vm::native_fn_throw(const std::string& name, const std::string& content) {
+void Vm::instruction_throw(const std::string& name, const std::string& content) {
     const auto err_name = new model::String(name);
     const auto err_msg = new model::String(content);
 
@@ -309,22 +313,13 @@ void Vm::native_fn_throw(const std::string& name, const std::string& content) {
     err_obj->positions = gen_positions();
     err_obj->attrs.insert("__name__", err_name);
     err_obj->attrs.insert("__msg__", err_msg);
-    DEBUG_OUTPUT("err_obj pos size = "+std::to_string(err_obj->positions.size()));;
-    throw_error(err_obj);
+    DEBUG_OUTPUT("err_obj pos size = "+std::to_string(err_obj->positions.size()));
+    curr_error = err_obj;
+    throw_error();
 }
 
-void Vm::throw_error(model::Object* err) {
-    const auto error = dynamic_cast<model::Error*>(err);
-    assert(error != nullptr);
-    if (! curr_error) {
-        DEBUG_OUTPUT("setting curr err");
-        curr_error = error;
-        curr_error->positions = (error->positions.size() == 0)
-            ? gen_positions()
-            : error->positions;
-        DEBUG_OUTPUT("curr err: "+curr_error->to_string());
-        DEBUG_OUTPUT("curr err pos size: "+std::to_string(curr_error->positions.size()));
-    }
+void Vm::throw_error() {
+    assert(curr_error != nullptr);
 
     size_t frames_to_pop = 0;
     CallFrame* target_frame = nullptr;
@@ -412,15 +407,10 @@ void Vm::execute_instruction(const Instruction& instruction) {
         case Opcode::TRY_END:         exec_TRY_END(instruction);       break;
         case Opcode::IMPORT:          exec_IMPORT(instruction);        break;
         case Opcode::LOAD_ERROR:      exec_LOAD_ERROR(instruction);    break;
-        case Opcode::CLEAN_ERROR:     exec_CLEAN_ERROR(instruction);   break;
-        case Opcode::SET_ERROR:       exec_SET_ERROR(instruction);     break;
         case Opcode::SET_NONLOCAL:    exec_SET_NONLOCAL(instruction);  break;
         case Opcode::JUMP:            exec_JUMP(instruction);          break;
         case Opcode::JUMP_IF_FALSE:   exec_JUMP_IF_FALSE(instruction); break;
         case Opcode::THROW:           exec_THROW(instruction);         break;
-        case Opcode::POP_TOP:         exec_POP_TOP(instruction);       break;
-        case Opcode::SWAP:            exec_SWAP(instruction);          break;
-        case Opcode::COPY_TOP:        exec_COPY_TOP(instruction);      break;
         case Opcode::IS_INSTANCE:     exec_IS_INSTANCE(instruction);   break;
         case Opcode::STOP:            exec_STOP(instruction);          break;
         default:                      assert(false && "execute_instruction: 未知 opcode");

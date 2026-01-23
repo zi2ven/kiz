@@ -39,18 +39,14 @@ void Repl::loop() {
             auto code = read(">>>");
             auto old_code_it = err::SrcManager::opened_files.find(file_path);
             if (old_code_it != nullptr) {
-                err::SrcManager::opened_files.emplace(file_path , old_code_it->second + "\n" + code);
+                err::SrcManager::opened_files[file_path] = old_code_it->second + "\n" + code;
             } else {
-                err::SrcManager::opened_files.emplace(file_path, code);
+                err::SrcManager::opened_files[file_path] = code;
             }
 
             add_to_history(code);
             eval_and_print(code);
-        } catch (KizStopRunningSignal& e) {
-            // todo
-        } catch (...) {
-            // todo
-        }
+        } catch (...) {}
     }
 }
 

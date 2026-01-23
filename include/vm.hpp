@@ -58,6 +58,14 @@ struct CallFrame {
     std::vector<TryBlockInfo> try_blocks;
 };
 
+class NativeFuncError final : public std::runtime_error {
+public:
+    std::string name;
+    std::string msg;
+    explicit NativeFuncError(std::string  name_, std::string  msg_) noexcept
+        : name(std::move(name_)), msg(msg_), std::runtime_error(msg_) {}
+};
+
 class Vm {
 public:
     static dep::HashMap<model::Module*> loaded_modules;
@@ -77,7 +85,7 @@ public:
     static void set_main_module(model::Module* src_module);
     static void exec_curr_code();
     static void set_curr_code(const model::CodeObject* code_object);
-    static void throw_error (model::Object* error);
+    static void throw_error ();
     static void load_required_modules(const dep::HashMap<model::Module*>& modules);
     
     static model::Object* get_stack_top();
@@ -86,14 +94,17 @@ public:
     static model::Object* get_return_val();
     static CallFrame* fetch_curr_call_frame();
     static model::Object* fetch_one_from_stack_top();
-    static std::tuple<model::Object*, model::Object*> fetch_two_from_stack_top(const std::string& curr_instruction_name);
+
+    static auto fetch_two_from_stack_top(const std::string& op_name)
+        -> std::tuple<model::Object*, model::Object*>;
 
     static model::Object* get_attr(const model::Object* obj, const std::string& attr);
     static bool check_obj_is_true(model::Object* obj);
     static void call_function(model::Object* func_obj, model::Object* args_obj, model::Object* self);
 
-    static void native_fn_throw(const std::string& name, const std::string& content);
-    static std::vector<std::pair<std::string, err::PositionInfo>> gen_positions();
+    static void instruction_throw(const std::string& name, const std::string& content);
+    static auto gen_positions()
+        -> std::vector<std::pair<std::string, err::PositionInfo>>;
 
 private:
     static void exec_ADD(const Instruction& instruction);
@@ -126,14 +137,9 @@ private:
     static void exec_TRY_START(const Instruction& instruction);
     static void exec_IMPORT(const Instruction& instruction);
     static void exec_LOAD_ERROR(const Instruction& instruction);
-    static void exec_CLEAN_ERROR(const Instruction& instruction);
-    static void exec_SET_ERROR(const Instruction& instruction);
     static void exec_JUMP(const Instruction& instruction);
     static void exec_JUMP_IF_FALSE(const Instruction& instruction);
     static void exec_THROW(const Instruction& instruction);
-    static void exec_POP_TOP(const Instruction& instruction);
-    static void exec_SWAP(const Instruction& instruction);
-    static void exec_COPY_TOP(const Instruction& instruction);
     static void exec_IS_INSTANCE(const Instruction& instruction);
     static void exec_STOP(const Instruction& instruction);
 };

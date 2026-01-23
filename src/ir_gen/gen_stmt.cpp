@@ -357,25 +357,11 @@ void IRGenerator::gen_try(TryStmt* try_stmt) {
             Opcode::LOAD_ERROR, std::vector<size_t>{}, catch_stmt->pos
         );
 
-        // 设置错误捕获变量
         const size_t name_idx = get_or_add_name(curr_names, catch_stmt->var_name);
         curr_code_list.emplace_back(
             Opcode::SET_LOCAL, std::vector{name_idx}, catch_stmt->pos
         );
-
-        curr_code_list.emplace_back(
-            Opcode::CLEAN_ERROR, std::vector<size_t>{}, try_stmt->pos
-        );
-
         gen_block(catch_stmt->catch_block.get());
-
-        curr_code_list.emplace_back(
-            Opcode::LOAD_VAR, std::vector{name_idx}, catch_stmt->pos
-        );
-
-        curr_code_list.emplace_back(
-            Opcode::SET_ERROR, std::vector<size_t>{}, try_stmt->pos
-        );
 
         catch_jump_to_all_end_idxs.emplace_back(curr_code_list.size());
         curr_code_list.emplace_back(
@@ -400,10 +386,6 @@ void IRGenerator::gen_try(TryStmt* try_stmt) {
     for (auto idx : catch_jump_to_all_end_idxs) {
         curr_code_list[idx].opn_list[0] = end_all_catch_idx;
     }
-
-    curr_code_list.emplace_back(
-        Opcode::CLEAN_ERROR, std::vector<size_t>{}, try_stmt->pos
-    );
 }
 
 
