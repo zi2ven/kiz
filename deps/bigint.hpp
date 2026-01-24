@@ -5,6 +5,10 @@
  * 支持 size_t 与合法数字字符串初始化，内置高效比较与 IO 操作。
  * @author azhz1107cat
  * @date 2025-10-25
+ * @note 修复核心问题：
+ *  1. div_mod_unsigned 中用二分查找替换逐次累加，避免无限循环
+ *  2. Karatsuba 乘法添加基准阈值，减少递归深度
+ *  3. shift_left 优化内存操作，避免 vector 开头插入的低效行为
  */
 
 #pragma once
@@ -15,6 +19,7 @@
 #include <string>
 #include <utility>
 #include <vector>
+#include <climits>  // 新增：用于 ULLONG_MAX
 
 namespace dep {
 
@@ -55,6 +60,7 @@ class BigInt {
      * @param dividend 被除数（非负）
      * @param divisor 除数（正，非零）
      * @return  pair<商, 余数>（均非负）
+     * @note 修复：用二分查找替换逐次累加，避免无限循环
      */
     static std::pair<BigInt, BigInt> div_mod_unsigned(const BigInt& dividend, const BigInt& divisor) {
         BigInt quotient, remainder;
@@ -68,12 +74,18 @@ class BigInt {
             // 余数 = 余数 * 10 + 当前位（模拟手工除法）
             remainder = remainder * BigInt(10) + BigInt(static_cast<size_t>(*it));
 
-            // 计算当前位商：找到最大的k使 k*divisor <= remainder
+            // 修复核心：二分查找最大的q_digit（0-9），避免逐次累加的无限循环
             uint8_t q_digit = 0;
-            BigInt temp = divisor;
-            while (temp <= remainder) {
-                q_digit++;
-                temp += divisor;
+            uint8_t left = 0, right = 9; // 单个数字位，范围固定0-9
+            while (left <= right) {
+                uint8_t mid = (left + right) / 2;
+                BigInt temp = divisor * BigInt(static_cast<size_t>(mid));
+                if (temp <= remainder) {
+                    q_digit = mid;
+                    left = mid + 1;
+                } else {
+                    right = mid - 1;
+                }
             }
 
             // 商的当前位存入（注意商是正序构建，后续需逆序）
@@ -95,10 +107,12 @@ class BigInt {
     /**
      * @brief Karatsuba乘法核心（无符号，仅处理正整数）
      * 时间复杂度 O(n^log3) ≈ O(n^1.58)，远快于普通O(n²)逐位乘
+     * @note 修复：添加基准阈值，减少递归深度
      */
     static BigInt karatsuba_mul(const BigInt& a, const BigInt& b) {
-        // 基准情况：其中一个数为个位数，直接逐位乘
-        if (a.digits_.size() == 1 || b.digits_.size() == 1) {
+        // 修复核心：基准条件优化，长度≤8时用普通乘法，减少递归深度
+        const size_t BASE_THRESHOLD = 8;
+        if (a.digits_.size() <= BASE_THRESHOLD || b.digits_.size() <= BASE_THRESHOLD) {
             BigInt res;
             res.digits_.resize(a.digits_.size() + b.digits_.size(), 0);
             // 逐位相乘，累加至对应位置
@@ -109,7 +123,7 @@ class BigInt {
                     res.digits_[i + j] = static_cast<uint8_t>(sum % 10);
                     carry = sum / 10;
                 }
-                // 修正：处理剩余进位（可能超过1位）
+                // 处理剩余进位（可能超过1位）
                 size_t carry_pos = i + b.digits_.size();
                 while (carry > 0) {
                     if (carry_pos >= res.digits_.size()) {
@@ -125,7 +139,7 @@ class BigInt {
             return res;
         }
 
-        // 修正：m 取较小长度的一半（向上取整）
+        // m 取较小长度的一半（向上取整）
         size_t min_len = std::min(a.digits_.size(), b.digits_.size());
         size_t m = (min_len + 1) / 2; // 向上取整，比如 min_len=5 → m=3，min_len=4→m=2
 
@@ -152,7 +166,7 @@ class BigInt {
         BigInt z1 = karatsuba_mul(a_low + a_high, b_low + b_high);
         BigInt z2 = karatsuba_mul(a_high, b_high);
 
-        // 修正：按标准顺序计算（加法交换律下结果一致，但更易读）
+        // 按标准顺序计算（加法交换律下结果一致，但更易读）
         BigInt res = z2.shift_left(2 * m) + (z1 - z0 - z2).shift_left(m) + z0;
         res.trim_leading_zeros();
         return res;
@@ -160,15 +174,23 @@ class BigInt {
 
     /**
      * @brief 左移（乘以 10^k，逆序存储中为开头补k个0）
+     * @note 修复：优化内存操作，避免 vector 开头 insert 的低效行为
      */
     [[nodiscard]] BigInt shift_left(size_t k) const {
         if (k == 0 || (digits_.size() == 1 && digits_[0] == 0)) {
             return *this;
         }
         BigInt res = *this;
-        // 关键修正：在开头补0（低位在前，开头补0 = 乘以10^k）
-        res.digits_.insert(res.digits_.begin(), k, 0);
-        res.trim_leading_zeros(); // 补0后可能有前导零（逆序末尾），需清理
+        // 修复核心：先resize预分配，再后移元素，最后填充0，避免开头insert
+        size_t old_size = res.digits_.size();
+        res.digits_.resize(old_size + k, 0); // 扩展内存
+        // 原有元素后移k位
+        for (size_t i = old_size + k - 1; i >= k; --i) {
+            res.digits_[i] = res.digits_[i - k];
+        }
+        // 前k位置0
+        std::fill(res.digits_.begin(), res.digits_.begin() + k, 0);
+        res.trim_leading_zeros(); // 补0后清理前导零
         return res;
     }
 
@@ -196,7 +218,7 @@ class BigInt {
     }
 
 public:
-    // ========================= 构造与析构（同前，补充shift_left友元声明） =========================
+    // ========================= 构造与析构 =========================
     BigInt() : is_negative_(false), digits_(1, 0) {}
     BigInt(size_t val) : is_negative_(false) {
         if (val == 0) { digits_.push_back(0); return; }
@@ -224,14 +246,14 @@ public:
     BigInt& operator=(const BigInt& other) = default;
     ~BigInt() = default;
 
-
+    // ========================= 绝对值 =========================
     [[nodiscard]] BigInt abs() const {
         BigInt res = *this;
         res.is_negative_ = false;
         return res;
     }
 
-    // ========================= 比较运算符（同前） =========================
+    // ========================= 比较运算符 =========================
     bool operator==(const BigInt& other) const {
         if (is_negative_ != other.is_negative_ || digits_.size() != other.digits_.size()) return false;
         return digits_ == other.digits_;
@@ -249,11 +271,7 @@ public:
     bool operator<=(const BigInt& other) const { return *this < other || *this == other; }
     bool operator>=(const BigInt& other) const { return *this > other || *this == other; }
 
-
     // ========================= 核心运算：加法 =========================
-    /**
-     * @brief 加法运算符：分同号/异号处理，复用绝对值比较
-     */
     BigInt operator+(const BigInt& other) const {
         BigInt res;
         res.digits_.clear(); // 清空默认的[0]
@@ -288,19 +306,12 @@ public:
         return res;
     }
 
-    /**
-     * @brief 加法赋值运算符（复用+，减少拷贝）
-     */
     BigInt& operator+=(const BigInt& other) {
         *this = *this + other;
         return *this;
     }
 
-
     // ========================= 核心运算：减法 =========================
-    /**
-     * @brief 减法运算符：确保大减小，避免负数中间结果
-     */
     BigInt operator-(const BigInt& other) const {
         // 特殊情况：减自己 → 0
         if (*this == other) {
@@ -341,19 +352,12 @@ public:
         return res;
     }
 
-    /**
-     * @brief 减法赋值运算符（复用-，减少拷贝）
-     */
     BigInt& operator-=(const BigInt& other) {
         *this = *this - other;
         return *this;
     }
 
-
     // ========================= 核心运算：乘法 =========================
-    /**
-     * @brief 乘法运算符：符号单独处理，绝对值用Karatsuba算法计算
-     */
     BigInt operator*(const BigInt& other) const {
         if ((digits_.size() == 1 && digits_[0] == 0) || (other.digits_.size() == 1 && other.digits_[0] == 0)) {
             return BigInt(0);
@@ -362,24 +366,17 @@ public:
         BigInt res;
         res.is_negative_ = is_negative_ ^ other.is_negative_;
         // 传入绝对值计算
-        res = karatsuba_mul(this->abs(), other.abs()); 
+        res = karatsuba_mul(this->abs(), other.abs());
         res.trim_leading_zeros();
         return res;
     }
 
-    /**
-     * @brief 乘法赋值运算符（复用*，减少拷贝）
-     */
     BigInt& operator*=(const BigInt& other) {
         *this = *this * other;
         return *this;
     }
 
     // ========================= 核心运算：取模 =========================
-    /**
-     * @brief 取模运算符：a mod b
-     * 规则：1. 除数b不能为0（断言报错）；2. 结果符号与被除数a一致；3. 0 ≤ |结果| < |b|
-     */
     BigInt operator%(const BigInt& other) const {
         // 断言：除数不能为0
         assert(!(other.digits_.size() == 1 && other.digits_[0] == 0) && "BigInt mod: divisor cannot be zero");
@@ -405,18 +402,12 @@ public:
         return remainder;
     }
 
-
-    /**
-     * @brief 取模赋值运算符：a %= b → a = a mod b
-     */
     BigInt& operator%=(const BigInt& other) {
         *this = *this % other;
         return *this;
     }
 
-    /**
-     * @brief 除法运算符：返回整数商（向下取整），符号规则同乘法
-     */
+    // ========================= 核心运算：除法 =========================
     BigInt operator/(const BigInt& other) const {
         // 断言：除数不能为0
         assert(!(other.digits_.size() == 1 && other.digits_[0] == 0) && "BigInt division: divisor cannot be zero");
@@ -437,22 +428,12 @@ public:
         return quotient;
     }
 
-    /**
-    * @brief 除法赋值运算符
-    */
     BigInt& operator/=(const BigInt& other) {
         *this = *this / other;
         return *this;
     }
 
-    /**
-     * @brief 幂运算：计算 base^exp（this 为底数，other 为指数）
-     * 规则：
-     * 1. 指数必须为非负整数（负指数会导致分数，BigInt 不支持，断言报错）；
-     * 2. 任何数的 0 次幂 = 1（包括 0^0，编程中默认处理为 1）；
-     * 3. 0 的正次幂 = 0；
-     * 4. 负数的偶次幂为正，奇次幂为负。
-     */
+    // ========================= 核心运算：幂运算 =========================
     BigInt pow(const BigInt& other) const {
         // 指数必须为非负整数
         assert(!other.is_negative_ && "BigInt pow: 指数不支持负数（BigInt 仅存整数）");
@@ -483,7 +464,7 @@ public:
         return result_abs;
     }
 
-    // ========================= to_string =========================
+    // ========================= 字符串/数值转换 =========================
     [[nodiscard]] std::string to_string() const {
         std::string result;
 
@@ -525,6 +506,12 @@ public:
         }
 
         return result;
+    }
+
+    // ========================= 友元：输出运算符 =========================
+    friend std::ostream& operator<<(std::ostream& os, const BigInt& num) {
+        os << num.to_string();
+        return os;
     }
 };
 
