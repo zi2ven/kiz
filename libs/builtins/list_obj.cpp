@@ -4,20 +4,20 @@
 namespace model {
 
 // List.__call__
-model::Object* list_call(model::Object* self, const model::List* args) {
-    auto obj = new model::List({});
+Object* list_call(Object* self, const List* args) {
+    auto obj = new List({});
     return obj;
 }
 
 // List.__bool__
-model::Object* list_bool(model::Object* self, const model::List* args) {
+Object* list_bool(Object* self, const List* args) {
     const auto self_int = dynamic_cast<List*>(self);
-    if (self_int->val.empty()) return new model::Bool(false);
-    return new model::Bool(true);
+    if (self_int->val.empty()) return new Bool(false);
+    return new Bool(true);
 }
 
 //  List.__add__：拼接另一个List（self + 传入List，返回新List）
-model::Object* list_add(model::Object* self, const model::List* args) {
+Object* list_add(Object* self, const List* args) {
     DEBUG_OUTPUT("You given " + std::to_string(args->val.size()) + " arguments (list_add)");
     assert(args->val.size() == 1 && "function List.add need 1 arg");
     
@@ -35,7 +35,7 @@ model::Object* list_add(model::Object* self, const model::List* args) {
 };
 
 // List.__mul__：重复自身n次 self * n
-model::Object* list_mul(model::Object* self, const model::List* args) {
+Object* list_mul(Object* self, const List* args) {
     DEBUG_OUTPUT("You given " + std::to_string(args->val.size()) + " arguments (list_mul)");
     assert(args->val.size() == 1 && "function List.mul need 1 arg");
     
@@ -56,7 +56,7 @@ model::Object* list_mul(model::Object* self, const model::List* args) {
 };
 
 // List.__eq__：判断两个List是否相等
-model::Object* list_eq(model::Object* self, const model::List* args) {
+Object* list_eq(Object* self, const List* args) {
     DEBUG_OUTPUT("You given " + std::to_string(args->val.size()) + " arguments (list_eq)");
     assert(args->val.size() == 1 && "function List.eq need 1 arg");
     
@@ -101,7 +101,7 @@ model::Object* list_eq(model::Object* self, const model::List* args) {
 };
 
 // List.contains：判断列表是否包含目标元素
-model::Object* list_contains(model::Object* self, const model::List* args) {
+Object* list_contains(Object* self, const List* args) {
     DEBUG_OUTPUT("You given " + std::to_string(args->val.size()) + " arguments (list_contains)");
     assert(args->val.size() == 1 && "function List.contains need 1 arg");
     
@@ -129,7 +129,7 @@ model::Object* list_contains(model::Object* self, const model::List* args) {
 };
 
 // List.append：向列表尾部添加一个元素
-model::Object* list_append(model::Object* self, const model::List* args) {
+Object* list_append(Object* self, const List* args) {
     DEBUG_OUTPUT("You given " + std::to_string(args->val.size()) + " arguments (list_append)");
     assert(args->val.size() == 1 && "function List.append need 1 arg");
     

@@ -198,6 +198,7 @@ class BigInt {
     * @brief 辅助函数：无符号快速幂（底数和指数均为非负整数）
     * 二分幂核心逻辑：a^b = (a^(b/2))^2 （b为偶数） / (a^(b/2))^2 * a （b为奇数）
     */
+public:
     static BigInt fast_pow_unsigned(const BigInt& base, const BigInt& exp) {
         BigInt result(1); // 初始结果为 1（乘法单位元）
         BigInt current_base = base;
@@ -217,7 +218,6 @@ class BigInt {
         return result;
     }
 
-public:
     // ========================= 构造与析构 =========================
     BigInt() : is_negative_(false), digits_(1, 0) {}
     BigInt(size_t val) : is_negative_(false) {
@@ -245,6 +245,10 @@ public:
     BigInt(const BigInt& other) = default;
     BigInt& operator=(const BigInt& other) = default;
     ~BigInt() = default;
+
+    [[nodiscard]] bool is_negative() const {
+        return is_negative_;
+    }
 
     // ========================= 绝对值 =========================
     [[nodiscard]] BigInt abs() const {
@@ -500,9 +504,10 @@ public:
         }
 
         unsigned long long result = 0;
-        for (size_t i = 0; i < digits_.size(); ++i) {
-            // 每次乘以 10 并加上当前位
-            result = result * 10 + digits_[i];
+        // 修复核心：逆序遍历 digits_（从高位到低位）
+        for (auto it = digits_.rbegin(); it != digits_.rend(); ++it) {
+            unsigned char digit = *it;
+            result = result * 10 + digit;
         }
 
         return result;

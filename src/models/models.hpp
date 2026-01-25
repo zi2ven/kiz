@@ -16,6 +16,8 @@
 #include "../vm/vm.hpp"
 #include "../../deps/hashmap.hpp"
 #include "../../deps/bigint.hpp"
+#include "../../deps/decimal.hpp"
+#include "../../deps/dict.hpp"
 #include "../../deps/rational.hpp"
 
 namespace model {
@@ -40,6 +42,7 @@ namespace magic_name {
     constexpr auto setitem = "__setitem__";
     constexpr auto contains = "__contains__";
     constexpr auto next_item = "__next__";
+    constexpr auto hash = "__hash__";
     constexpr auto owner_module = "__owner_module__";
 }
 
@@ -67,7 +70,7 @@ public:
     enum class ObjectType {
         OT_Object, OT_Nil, OT_Bool, OT_Int, OT_Rational, OT_String,
         OT_List, OT_Dictionary, OT_CodeObject, OT_Function,
-        OT_CppFunction, OT_Module, OT_Error
+        OT_CppFunction, OT_Module, OT_Error, OT_Decimal
     };
 
     // 获取实际类型的虚函数
@@ -117,6 +120,7 @@ inline auto based_nil = new Object();
 inline auto based_str = new Object();
 inline auto based_native_function = new Object();
 inline auto based_error = new Object();
+inline auto based_decimal = new Object();
 inline auto based_module = new Object();
 
 class List;
@@ -253,6 +257,19 @@ public:
     }
 };
 
+class Decimal : public Object {
+public:
+    dep::Decimal val;
+    static constexpr ObjectType TYPE = ObjectType::OT_Decimal;
+    [[nodiscard]] ObjectType get_type() const override { return TYPE; }
+    explicit Decimal(dep::Decimal val) : val(std::move(val)) {
+        attrs.insert("__parent__", based_decimal);
+    }
+    [[nodiscard]] std::string to_string() const override {
+        return val.to_string();
+    }
+};
+
 
 class Rational : public Object {
 public:
@@ -286,31 +303,27 @@ public:
 
 class Dictionary : public Object {
 public:
-
+    dep::Dict<std::pair<Object*, Object*>> val;
     static constexpr ObjectType TYPE = ObjectType::OT_Dictionary;
     [[nodiscard]] ObjectType get_type() const override { return TYPE; }
 
-    explicit Dictionary(const dep::HashMap<Object*>& attrs_input){
-        attrs = attrs_input;
+    explicit Dictionary(dep::Dict<std::pair<Object*, Object*>> val_) : val(std::move(val_)) {
         attrs.insert("__parent__", based_dict);
     }
     explicit Dictionary() {
         attrs.insert("__parent__", based_dict);
-        attrs = dep::HashMap<Object*>{};
     }
 
     [[nodiscard]] std::string to_string() const override {
         std::string result = "{";
-        auto kv_list = attrs.to_vector();
-        for (size_t i = 0; i < kv_list.size(); ++i) {
-            auto& [key, val] = kv_list[i];
-
-            std::string val_str = (val != nullptr) ? val->to_string() : "nil";
-
-            result += key + ": " + val_str;
+        auto kv_list = val.to_vector();
+        size_t i = 0;
+        for (auto& [_, kv_pair] : kv_list) {
+            result += kv_pair.first->to_string() + ": " + kv_pair.second->to_string();
             if (i != kv_list.size() - 1) {
                 result += ", ";
             }
+            ++i;
         }
         result += "}";
         return result;

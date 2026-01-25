@@ -8,7 +8,6 @@
 namespace dep {
 
 class Decimal {
-private:
     BigInt mantissa_;   // 尾数（包含符号，归一化后无末尾零）
     int exponent_;      // 指数：value = mantissa_ * 10^exponent_
 
@@ -30,30 +29,27 @@ private:
     }
 
     /**
-     * @brief 对齐两个Decimal的指数，返回对齐后的公共指数
+     * @brief 修复：对齐两个Decimal的指数（核心错误修复）
+     * 正确逻辑：将两个数对齐到**更小的指数**（更低的量级），避免大数被缩小导致精度丢失
      * @param a 输入Decimal
      * @param b 输入Decimal
      * @param a_mant 输出：a对齐后的尾数
      * @param b_mant 输出：b对齐后的尾数
-     * @return 公共指数
+     * @return 公共指数（两个数中更小的那个）
      */
     static int align_exponent(const Decimal& a, const Decimal& b, BigInt& a_mant, BigInt& b_mant) {
-        int exp_diff = a.exponent_ - b.exponent_;
-        if (exp_diff == 0) {
-            a_mant = a.mantissa_;
-            b_mant = b.mantissa_;
-            return a.exponent_;
-        } else if (exp_diff > 0) {
-            // a的指数更大，b的尾数需要乘以10^exp_diff
-            a_mant = a.mantissa_;
-            b_mant = b.mantissa_ * BigInt::fast_pow_unsigned(BigInt(10), BigInt(exp_diff));
-            return a.exponent_;
-        } else {
-            // b的指数更大，a的尾数需要乘以10^(-exp_diff)
-            a_mant = a.mantissa_ * BigInt::fast_pow_unsigned(BigInt(10), BigInt(-exp_diff));
-            b_mant = b.mantissa_;
-            return b.exponent_;
-        }
+        // 找到更小的指数（公共指数）
+        int common_exp = std::min(a.exponent_, b.exponent_);
+        // 计算每个数需要放大的倍数：10^(原指数 - 公共指数)
+        int a_scale = a.exponent_ - common_exp;
+        int b_scale = b.exponent_ - common_exp;
+
+        BigInt ten(10);
+        // 放大尾数，使两者指数都等于common_exp
+        a_mant = a.mantissa_ * BigInt::fast_pow_unsigned(ten, BigInt(a_scale));
+        b_mant = b.mantissa_ * BigInt::fast_pow_unsigned(ten, BigInt(b_scale));
+
+        return common_exp;
     }
 
 public:
@@ -65,16 +61,16 @@ public:
         normalize();
     }
 
-    // 从整数构造
+    // 修复：整数构造函数（原逻辑没问题，但补充注释）
     template <typename T, typename = std::enable_if_t<std::is_integral_v<T>>>
     explicit Decimal(T val) : mantissa_(BigInt(static_cast<size_t>(std::abs(val)))), exponent_(0) {
         if (val < 0) {
-            mantissa_ = -mantissa_;
+            mantissa_ = BigInt(0) - mantissa_;
         }
         normalize();
     }
 
-    // 从字符串构造（支持 "123", "-45.678", "0.001", "123e-2" 等格式）
+    // 从字符串构造（原逻辑正确，无需修改）
     explicit Decimal(const std::string& s) {
         std::string str = s;
         bool is_neg = false;
@@ -116,13 +112,13 @@ public:
 
         // 应用符号
         if (is_neg) {
-            mantissa_ = -mantissa_;
+            mantissa_ = BigInt(0) - mantissa_;
         }
 
         normalize();
     }
 
-    // 移动/拷贝构造
+    // 移动/拷贝构造（默认）
     Decimal(const Decimal& other) = default;
     Decimal(Decimal&& other) noexcept = default;
     Decimal& operator=(const Decimal& other) = default;
@@ -149,7 +145,7 @@ public:
         }
     }
 
-    /// 转换为字符串
+    /// 修复：to_string() 方法（小数点位置计算错误）
     [[nodiscard]] std::string to_string() const {
         if (mantissa_ == BigInt(0)) {
             return "0";
@@ -157,21 +153,24 @@ public:
 
         std::string mant_str = mantissa_.abs().to_string();
         bool is_neg = mantissa_.is_negative();
-        int total_exp = exponent_;
+        int exp = exponent_;
 
-        // 计算小数点位置：pos = 字符串长度 + total_exp
-        int dot_pos = static_cast<int>(mant_str.size()) + total_exp;
+        // 修复核心：正确计算小数点位置
+        // 逻辑：数值 = mant_str × 10^exp → 等价于 mant_str 的小数点向左（exp负）/右（exp正）移|exp|位
         std::string res;
-
-        if (dot_pos <= 0) {
-            // 小于1的小数：0.00...mant_str
-            res = "0." + std::string(-dot_pos, '0') + mant_str;
-        } else if (dot_pos >= static_cast<int>(mant_str.size())) {
-            // 整数或带末尾零的数：mant_str + 00...
-            res = mant_str + std::string(dot_pos - static_cast<int>(mant_str.size()), '0');
+        if (exp >= 0) {
+            // 指数非负：尾数后补exp个零（整数）
+            res = mant_str + std::string(exp, '0');
         } else {
-            // 带小数的数：拆分整数和小数部分
-            res = mant_str.substr(0, dot_pos) + "." + mant_str.substr(dot_pos);
+            // 指数为负：需要插入小数点
+            int abs_exp = std::abs(exp);
+            if (abs_exp >= static_cast<int>(mant_str.size())) {
+                // 小数点在最前面，补零：0.000...mant_str
+                res = "0." + std::string(abs_exp - mant_str.size(), '0') + mant_str;
+            } else {
+                // 小数点在中间：拆分整数和小数部分
+                res = mant_str.substr(0, mant_str.size() - abs_exp) + "." + mant_str.substr(mant_str.size() - abs_exp);
+            }
         }
 
         // 移除末尾的零和多余的小数点
@@ -190,24 +189,20 @@ public:
         return res;
     }
 
-    /// 哈希函数（修改后：返回 BigInt 类型，组合尾数和指数的哈希值）
+    /// 哈希函数（保持原有）
     [[nodiscard]] BigInt hash() const {
-        // 计算尾数和指数的 size_t 哈希值
         size_t mant_hash = std::hash<std::string>()(mantissa_.to_string());
         size_t exp_hash = std::hash<int>()(exponent_);
 
-        // 将 size_t 哈希值转换为 BigInt，并通过位移组合（避免哈希冲突）
         BigInt mant_big(mant_hash);
         BigInt exp_big(exp_hash);
-        // 用 64 位位移（适配 size_t 宽度），确保两个哈希值的位域不重叠
         BigInt shift_base(1);
-        shift_base = shift_base.pow(BigInt(64)); // 1 << 64
+        shift_base = shift_base.pow(BigInt(64));
 
-        // 组合公式：mant_big * 2^64 + exp_big
         return mant_big * shift_base + exp_big;
     }
 
-    // ========================= 比较运算符 =========================
+    // ========================= 比较运算符（逻辑正确，无需修改） =========================
     bool operator==(const Decimal& other) const {
         if (exponent_ != other.exponent_) {
             BigInt a_mant, b_mant;
@@ -239,8 +234,7 @@ public:
         return *this > other || *this == other;
     }
 
-    // ========================= 算术运算符（Decimal与Decimal） =========================
-    /// 加法
+    // ========================= 算术运算符（保持原有） =========================
     Decimal operator+(const Decimal& other) const {
         BigInt a_mant, b_mant;
         int exp = align_exponent(*this, other, a_mant, b_mant);
@@ -251,7 +245,6 @@ public:
         return res;
     }
 
-    /// 减法
     Decimal operator-(const Decimal& other) const {
         BigInt a_mant, b_mant;
         int exp = align_exponent(*this, other, a_mant, b_mant);
@@ -262,7 +255,6 @@ public:
         return res;
     }
 
-    /// 乘法
     Decimal operator*(const Decimal& other) const {
         BigInt mul_mant = mantissa_ * other.mantissa_;
         Decimal res(mul_mant);
@@ -271,50 +263,45 @@ public:
         return res;
     }
 
-    /// 除法（无限精度，若除不尽则尾数会无限长，此处使用BigInt除法保证精度）
-    /**
-     * @brief 除法：保留小数点后n位，除不尽时截断
-     * @param other 除数
-     * @param n 保留小数位数（n≥0，n=0时取整）
-     * @return 保留n位小数的Decimal结果
-     * @throw KizStopRunningSignal 除数为0时抛出
-     */
-    Decimal div(const Decimal& other, int n) const {
-        // 检查除数为0，抛自定义异常
+    Decimal operator/(const Decimal& other) const {
+        return this->div(other, 10); // 默认保留10位小数
+    }
+
+    [[nodiscard]] Decimal div(const Decimal& other, int n=10) const { // n改为int类型
         if (other.mantissa_ == BigInt(0)) {
             throw KizStopRunningSignal();
         }
-        // 检查n的合法性（非负）
         assert(n >= 0 && "n must be non-negative");
 
         BigInt a_mant, b_mant;
-        int exp = align_exponent(*this, other, a_mant, b_mant);
+        // 对齐指数（抵消a/b的指数影响）
+        align_exponent(*this, other, a_mant, b_mant);
 
-        // 补零扩展被除数：乘以 10^n，用于保留n位小数
         BigInt ten(10);
+        // 补零扩展被除数：乘以 10^n，用于保留n位小数
         BigInt scale = BigInt::fast_pow_unsigned(ten, BigInt(n));
         BigInt dividend = a_mant * scale;
 
         // 整数除法（截断余数）
         BigInt quotient = dividend / b_mant;
 
-        // 计算结果的指数：exp（对齐后的指数） - n（补零的位数）
-        Decimal res(quotient);
-        res.exponent_ = exp - n;
-        res.normalize();
+        // 修复核心：先创建空对象，避免构造函数提前normalize
+        Decimal res; // 空构造：mantissa_=0，exponent_=0
+        res.mantissa_ = quotient; // 原始商（如5000000000），未被normalize
+        res.exponent_ = -n; // 设置指数为 -n（如-10）
+        res.normalize(); // 此时normalize会正确简化：5000000000 → 5，exponent_-10→-1
 
         return res;
     }
 
-    /// 乘方（指数为BigInt，仅支持整数次幂）
-    Decimal pow(const BigInt& exp) const {
+    [[nodiscard]] Decimal pow(const BigInt& exp) const {
         assert(!exp.is_negative() && "Decimal pow: negative exponent not supported");
         if (exp == BigInt(0)) {
             return Decimal(BigInt(1));
         }
         BigInt mant_pow = BigInt::fast_pow_unsigned(mantissa_.abs(), exp);
         if (mantissa_.is_negative() && (exp % BigInt(2) == BigInt(1))) {
-            mant_pow = -mant_pow;
+            mant_pow = BigInt(0) - mant_pow;
         }
         Decimal res(mant_pow);
         res.exponent_ = exponent_ * static_cast<int>(exp.to_unsigned_long_long());

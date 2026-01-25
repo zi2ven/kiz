@@ -4,24 +4,24 @@
 namespace model {
 
 // String.__call__
-model::Object* str_call(model::Object* self, const model::List* args) {
+Object* str_call(Object* self, const List* args) {
     std::string val = 
         args->val.empty()
         ? ""
         : builtin::get_one_arg(args)->to_string();
 
-    return new model::String(val);
+    return new String(val);
 }
 
 // String.__bool__
-model::Object* str_bool(model::Object* self, const model::List* args) {
+Object* str_bool(Object* self, const List* args) {
     const auto self_int = dynamic_cast<String*>(self);
-    if (self_int->val.empty()) return new model::Bool(false);
-    return new model::Bool(true);
+    if (self_int->val.empty()) return new Bool(false);
+    return new Bool(true);
 }
 
 // String.__add__：字符串拼接（self + 传入String，返回新String，不修改原对象）
-model::Object* str_add(model::Object* self, const model::List* args) {
+Object* str_add(Object* self, const List* args) {
     DEBUG_OUTPUT("You given " + std::to_string(args->val.size()) + " arguments (str_add)");
     assert(args->val.size() == 1 && "function String.add need 1 arg");
     
@@ -36,7 +36,7 @@ model::Object* str_add(model::Object* self, const model::List* args) {
 };
 
 // String.__mul__：字符串重复n次（self * n，返回新String，n为非负整数）
-model::Object* str_mul(model::Object* self, const model::List* args) {
+Object* str_mul(Object* self, const List* args) {
     DEBUG_OUTPUT("You given " + std::to_string(args->val.size()) + " arguments (str_mul)");
     assert(args->val.size() == 1 && "function String.mul need 1 arg");
     
@@ -57,7 +57,7 @@ model::Object* str_mul(model::Object* self, const model::List* args) {
 };
 
 // String.__eq__：判断两个字符串是否相等 self == x
-model::Object* str_eq(model::Object* self, const model::List* args) {
+Object* str_eq(Object* self, const List* args) {
     DEBUG_OUTPUT("You given " + std::to_string(args->val.size()) + " arguments (str_eq)");
     assert(args->val.size() == 1 && "function String.eq need 1 arg");
     
@@ -71,7 +71,7 @@ model::Object* str_eq(model::Object* self, const model::List* args) {
 };
 
 // String.__contains__：判断是否包含子字符串 x in self
-model::Object* str_contains(model::Object* self, const model::List* args) {
+Object* str_contains(Object* self, const List* args) {
     DEBUG_OUTPUT("You given " + std::to_string(args->val.size()) + " arguments (str_contains)");
     assert(args->val.size() == 1 && "function String.contains need 1 arg");
     

@@ -83,6 +83,20 @@ void Vm::entry_builtins() {
     model::based_int->attrs.insert("__call__", new model::NativeFunction(model::int_call));
     model::based_int->attrs.insert("__bool__", new model::NativeFunction(model::int_bool));
 
+    // Decimal类型魔术方法
+    model::based_decimal->attrs.insert("__add__", new model::NativeFunction(model::decimal_add));
+    model::based_decimal->attrs.insert("__sub__", new model::NativeFunction(model::decimal_sub));
+    model::based_decimal->attrs.insert("__mul__", new model::NativeFunction(model::decimal_mul));
+    model::based_decimal->attrs.insert("__div__", new model::NativeFunction(model::decimal_div));
+    model::based_decimal->attrs.insert("__pow__", new model::NativeFunction(model::decimal_pow));
+    model::based_decimal->attrs.insert("__neg__", new model::NativeFunction(model::decimal_neg));
+    model::based_decimal->attrs.insert("__gt__", new model::NativeFunction(model::decimal_gt));
+    model::based_decimal->attrs.insert("__lt__", new model::NativeFunction(model::decimal_lt));
+    model::based_decimal->attrs.insert("__eq__", new model::NativeFunction(model::decimal_eq));
+    model::based_decimal->attrs.insert("__call__", new model::NativeFunction(model::decimal_call));
+    model::based_decimal->attrs.insert("__bool__", new model::NativeFunction(model::decimal_bool));
+    model::based_decimal->attrs.insert("safe_div", new model::NativeFunction(model::decimal_safe_div));
+
     // Rational 类型魔法方法
     model::based_rational->attrs.insert("__add__", new model::NativeFunction(model::rational_add));
     model::based_rational->attrs.insert("__sub__", new model::NativeFunction(model::rational_sub));
@@ -136,6 +150,7 @@ void Vm::entry_builtins() {
     builtins.insert("Int", model::based_int);
     builtins.insert("Bool", model::based_bool);
     builtins.insert("__Rational", model::based_rational);
+    builtins.insert("Decimal", model::based_decimal);
     builtins.insert("List", model::based_list);
     builtins.insert("Dict", model::based_dict);
     builtins.insert("Str", model::based_str);
@@ -144,6 +159,5 @@ void Vm::entry_builtins() {
     builtins.insert("__Nil", model::based_nil);
     builtins.insert("Error", model::based_error);
     builtins.insert("Module", model::based_module);
-    std::cout << "current builtins: " + builtins.to_string();
 }
 }

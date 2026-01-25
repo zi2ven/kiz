@@ -1,10 +1,8 @@
 #pragma once
 #include <string>
 #include <iterator>
-#include <algorithm>
 #include <stdexcept>
 #include <cstdint>
-#include <cstring>
 #include <iostream>
 
 namespace dep {
@@ -44,11 +42,11 @@ class u8str {
                 cp |= (static_cast<uint8_t>(*ptr++) & 0x3F) << 6;
                 cp |= static_cast<uint8_t>(*ptr++) & 0x3F;
                 break;
-            default: ptr++; break;
         }
         return cp;
     }
 
+public:
     // 辅助函数：从 Unicode 码点计算 UTF-8 字节长度
     static size_t codepoint_utf8_len(char32_t cp) noexcept {
         if (cp <= 0x7F) return 1;
@@ -58,7 +56,6 @@ class u8str {
         return 1;
     }
 
-public:
     // 嵌套迭代器类，遍历 Unicode 码点
     class iterator {
     public:
@@ -199,10 +196,10 @@ public:
 } // namespace dep
 
 // 全局输出重载，支持打印 char32_t 码点（简单实现）
-std::ostream& operator<<(std::ostream& os, char32_t cp) {
+inline std::ostream& operator<<(std::ostream& os, char32_t cp) {
     // 转为 UTF-8 字节并输出
     char buf[4] = {0};
-    size_t len = u8str::codepoint_utf8_len(cp);
+    size_t len = dep::u8str::codepoint_utf8_len(cp);
     switch (len) {
         case 4: buf[3] = (cp & 0x3F) | 0x80; cp >>= 6;
         case 3: buf[2] = (cp & 0x3F) | 0x80; cp >>= 6;

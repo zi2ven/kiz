@@ -45,7 +45,6 @@ public:
     void gen_try(TryStmt* try_stmt);
     void gen_block(const BlockStmt* block);
 
-    void gen_literal(Expr* expr);
     void gen_fn_call(CallExpr* expr);
     void gen_dict(DictDeclExpr* expr);
     void gen_expr(Expr* expr);
@@ -56,7 +55,7 @@ public:
 protected:
     [[nodiscard]] model::CodeObject* make_code_obj() const;
     static model::Int* make_int_obj(const NumberExpr* num_expr);
-    static model::Rational* make_rational_obj(NumberExpr* num_expr);
+    static model::Decimal* make_decimal_obj(const DecimalExpr* dec_expr);
     static model::String* make_string_obj(const StringExpr* str_expr);
 };
 

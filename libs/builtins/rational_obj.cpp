@@ -3,7 +3,7 @@
 namespace model {
 
 // Rational.__add__：有理数加法（self + 传入值，支持Rational/Int，返回新Rational）
-model::Object* rational_add(model::Object* self, const model::List* args) {
+Object* rational_add(Object* self, const List* args) {
     DEBUG_OUTPUT("You given " + std::to_string(args->val.size()) + " arguments (rational_add)");
     assert(args->val.size() == 1 && "function Rational.add need 1 arg");
 
@@ -25,7 +25,7 @@ model::Object* rational_add(model::Object* self, const model::List* args) {
 };
 
 // Rational.__sub__：有理数减法（self - 传入值，支持Rational/Int，返回新Rational）
-model::Object* rational_sub(model::Object* self, const model::List* args) {
+Object* rational_sub(Object* self, const List* args) {
     DEBUG_OUTPUT("You given " + std::to_string(args->val.size()) + " arguments (rational_sub)");
     assert(args->val.size() == 1 && "function Rational.sub need 1 arg");
 
@@ -47,7 +47,7 @@ model::Object* rational_sub(model::Object* self, const model::List* args) {
 };
 
 // Rational.__mul__：有理数乘法（self * 传入值，支持Rational/Int，返回新Rational）
-model::Object* rational_mul(model::Object* self, const model::List* args) {
+Object* rational_mul(Object* self, const List* args) {
     DEBUG_OUTPUT("You given " + std::to_string(args->val.size()) + " arguments (rational_mul)");
     assert(args->val.size() == 1 && "function Rational.mul need 1 arg");
 
@@ -69,7 +69,7 @@ model::Object* rational_mul(model::Object* self, const model::List* args) {
 };
 
 // Rational.__div__：有理数除法（self ÷ 传入值，支持Rational/Int，返回新Rational）
-model::Object* rational_div(model::Object* self, const model::List* args) {
+Object* rational_div(Object* self, const List* args) {
     DEBUG_OUTPUT("You given " + std::to_string(args->val.size()) + " arguments (rational_div)");
     assert(args->val.size() == 1 && "function Rational.div need 1 arg");
 
@@ -94,7 +94,7 @@ model::Object* rational_div(model::Object* self, const model::List* args) {
 };
 
 // Rational.__eq__：有理数相等判断（self == 传入值，支持Rational/Int，返回Bool）
-model::Object* rational_eq(model::Object* self, const model::List* args) {
+Object* rational_eq(Object* self, const List* args) {
     DEBUG_OUTPUT("You given " + std::to_string(args->val.size()) + " arguments (rational_eq)");
     assert(args->val.size() == 1 && "function Rational.eq need 1 arg");
 
@@ -116,7 +116,7 @@ model::Object* rational_eq(model::Object* self, const model::List* args) {
 };
 
 // Rational.__lt__：有理数小于判断（self < 传入值，支持Rational/Int，返回Bool）
-model::Object* rational_lt(model::Object* self, const model::List* args) {
+Object* rational_lt(Object* self, const List* args) {
     DEBUG_OUTPUT("You given " + std::to_string(args->val.size()) + " arguments (rational_lt)");
     assert(args->val.size() == 1 && "function Rational.lt need 1 arg");
 
@@ -138,7 +138,7 @@ model::Object* rational_lt(model::Object* self, const model::List* args) {
 };
 
 // Rational.__gt__：有理数大于判断（self > 传入值，支持Rational/Int，返回Bool）
-model::Object* rational_gt(model::Object* self, const model::List* args) {
+Object* rational_gt(Object* self, const List* args) {
     DEBUG_OUTPUT("You given " + std::to_string(args->val.size()) + " arguments (rational_gt)");
     assert(args->val.size() == 1 && "function Rational.gt need 1 arg");
 

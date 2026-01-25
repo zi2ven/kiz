@@ -4,15 +4,15 @@
 namespace model {
 
 // Bool.__call__
-model::Object* bool_call(model::Object* self, const model::List* args) {
+Object* bool_call(Object* self, const List* args) {
     const auto a = builtin::get_one_arg(args);
-    return new model::Bool(
+    return new Bool(
         kiz::Vm::is_true(a)
     );
 }
 
 // Bool.__eq__ 布尔值相等判断：self == args[0]（仅支持Bool与Bool比较）
-model::Object* bool_eq(model::Object* self, const model::List* args) {
+Object* bool_eq(Object* self, const List* args) {
     DEBUG_OUTPUT("You given " + std::to_string(args->val.size()) + " arguments (bool_eq)");
     assert(args->val.size() == 1 && "function Bool.eq need 1 arg");
     

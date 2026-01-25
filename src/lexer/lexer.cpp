@@ -140,62 +140,31 @@ std::vector<Token> Lexer::tokenize(const std::string& src, size_t lineno_start) 
         } else if (isdigit(src[pos]) || (src[pos] == '.' && pos + 1 < src.size() && isdigit(src[pos + 1]))) {
             size_t j = pos;
             bool has_dot = false;
-            bool has_underscore;
 
-            // Handle decimal numbers including scientific notation
-            // Parse mantissa (before 'e' or 'E')
+            // 仅解析整数（纯数字）或简单小数（一个小数点+前后数字）
             while (j < src.size()) {
-                // 允许数字、单个小数点（仅一次）和下划线（作为分隔符）
                 if (isdigit(src[j])) {
-                    has_underscore = false; // 重置下划线标志
                     ++j;
                 } else if (src[j] == '.' && !has_dot) {
+                    // 小数点只能出现一次，且前后必须有数字
                     has_dot = true;
-                    has_underscore = false; // 重置下划线标志
                     ++j;
-                } else if (src[j] == '_' && !has_underscore && j > pos && j + 1 < src.size() && isdigit(src[j + 1])) {
-                    has_underscore = true;
-                    ++j;
+                    // 小数点后必须有数字，否则终止解析
+                    if (j >= src.size() || !isdigit(src[j])) {
+                        --j; // 回退到小数点位置，不解析无效的小数点
+                        break;
+                    }
                 } else {
                     break;
                 }
             }
 
-            // 检查科学计数法（e或E）
-            if (j < src.size() && (src[j] == 'e' || src[j] == 'E')) {
-                size_t e_pos = j;
-                ++j;    // 跳过'e'或'E'
-
-                // 检查指数部分的可选正负号
-                if (j < src.size() && (src[j] == '+' || src[j] == '-')) {
-                    ++j;    // 跳过符号
-                }
-
-                // 解析指数部分的数字（允许下划线）
-                has_underscore = false; // 重置下划线标志
-                if (j < src.size() && isdigit(src[j])) {
-                    while (j < src.size()) {
-                        if (isdigit(src[j])) {
-                            has_underscore = false;
-                            ++j;
-                        } else if (src[j] == '_' && !has_underscore && j + 1 < src.size() && isdigit(src[j + 1])) {
-                            has_underscore = true;
-                            ++j;
-                        } else {
-                            break;
-                        }
-                    }
-                } else {
-                    // 无效的科学计数法 - 回退到'e'之前的位置
-                    j = e_pos;
-                }
-            }
-
-            // 提取数字字符串并移除所有下划线
+            // 提取数字字符串
             std::string num_str = src.substr(pos, j - pos);
-            num_str.erase(std::remove(num_str.begin(), num_str.end(), '_'), num_str.end());
+            // 根据是否包含小数点区分类型：小数用Decimal，整数用Number
+            TokenType token_type = has_dot ? TokenType::Decimal : TokenType::Number;
 
-            tokens.emplace_back(TokenType::Number, num_str, lineno, start_col);
+            tokens.emplace_back(token_type, num_str, lineno, start_col);
             col += (j - pos);
             pos = j;
         } else if (src[pos] == '(') {

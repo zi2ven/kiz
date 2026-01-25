@@ -162,6 +162,9 @@ std::unique_ptr<Expr> Parser::parse_primary() {
     if (tok.type == TokenType::Number) {
         return std::make_unique<NumberExpr>(tok.pos, tok.text);
     }
+    if (tok.type == TokenType::Decimal) {
+        return std::make_unique<DecimalExpr>(tok.pos, tok.text);
+    }
     if (tok.type == TokenType::String) {
         return std::make_unique<StringExpr>(tok.pos, tok.text);
     }

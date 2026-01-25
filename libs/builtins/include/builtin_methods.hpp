@@ -19,6 +19,20 @@ Object* int_gt(Object* self, const List* args);
 Object* int_bool(Object* self, const List* args);
 Object* int_call(Object* self, const List* args);
 
+// Decimal类型原生函数
+Object* decimal_add(Object* self, const List* args);
+Object* decimal_sub(Object* self, const List* args);
+Object* decimal_mul(Object* self, const List* args);
+Object* decimal_div(Object* self, const List* args);
+Object* decimal_pow(Object* self, const List* args);
+Object* decimal_neg(Object* self, const List* args);
+Object* decimal_eq(Object* self, const List* args);
+Object* decimal_lt(Object* self, const List* args);
+Object* decimal_gt(Object* self, const List* args);
+Object* decimal_bool(Object* self, const List* args);
+Object* decimal_call(Object* self, const List* args);
+Object* decimal_safe_div(Object* self, const List* args);
+
 // Rational 类型原生函数
 Object* rational_add(Object* self, const List* args);
 Object* rational_sub(Object* self, const List* args);

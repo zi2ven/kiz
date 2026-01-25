@@ -18,7 +18,7 @@ namespace kiz {
 enum class AstType {
     // 表达式类型（对应 Expr 子类）
     NilExpr, BoolExpr,
-    StringExpr, NumberExpr, ListExpr, IdentifierExpr,
+    StringExpr, NumberExpr, DecimalExpr, ListExpr, IdentifierExpr,
     BinaryExpr, UnaryExpr,
     CallExpr,
     GetMemberExpr, GetItemExpr,
@@ -64,6 +64,15 @@ struct NumberExpr final :  Expr {
         : value(std::move(v)) {
         this->pos = pos;
         this->ast_type = AstType::NumberExpr;
+    }
+};
+
+struct DecimalExpr final :  Expr {
+    std::string value;
+    explicit DecimalExpr(const err::PositionInfo& pos, std::string v)
+        : value(std::move(v)) {
+        this->pos = pos;
+        this->ast_type = AstType::DecimalExpr;
     }
 };
 

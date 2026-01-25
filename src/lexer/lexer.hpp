@@ -26,7 +26,7 @@ enum class TokenType {
     // 赋值运算符
     Assign,
     // 字面量
-    Number, String,
+    Number, Decimal, String,
     // 分隔符
     LParen, RParen, LBrace, RBrace, LBracket, RBracket,
     Comma, Dot, TripleDot, Semicolon,
