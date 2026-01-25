@@ -39,14 +39,18 @@ void IRGenerator::gen_expr(Expr* expr) {
             else if (bin_expr->op == "/") opc = Opcode::OP_DIV;
             else if (bin_expr->op == "%") opc = Opcode::OP_MOD;
             else if (bin_expr->op == "^") opc = Opcode::OP_POW;
+
             else if (bin_expr->op == "==") opc = Opcode::OP_EQ;
+            else if (bin_expr->op == ">=") opc = Opcode::OP_GE;
+            else if (bin_expr->op == "<=") opc = Opcode::OP_LE;
+            else if (bin_expr->op == "!=") opc = Opcode::OP_NE;
             else if (bin_expr->op == ">") opc = Opcode::OP_GT;
             else if (bin_expr->op == "<") opc = Opcode::OP_LT;
+
             else if (bin_expr->op == "and") opc = Opcode::OP_AND;
             else if (bin_expr->op == "or") opc = Opcode::OP_OR;
-            else if (bin_expr->op == "not") opc = Opcode::OP_NOT;
-            else if (bin_expr->op == "in") opc = Opcode::OP_IN;
             else if (bin_expr->op == "is") opc = Opcode::OP_IS;
+
             else assert(false && "gen_expr: 未支持的二元运算符");
 
             curr_code_list.emplace_back(
@@ -63,7 +67,7 @@ void IRGenerator::gen_expr(Expr* expr) {
 
             Opcode opc;
             if (unary_expr->op == "-") opc = Opcode::OP_NEG;
-            else if (unary_expr->op == "!") opc = Opcode::OP_NOT;
+            else if (unary_expr->op == "not") opc = Opcode::OP_NOT;
             else assert(false && "gen_expr: 未支持的一元运算符");
 
             curr_code_list.emplace_back(

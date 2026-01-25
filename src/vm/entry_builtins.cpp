@@ -76,6 +76,7 @@ void Vm::entry_builtins() {
     model::based_int->attrs.insert("__div__", new model::NativeFunction(model::int_div));
     model::based_int->attrs.insert("__mod__", new model::NativeFunction(model::int_mod));
     model::based_int->attrs.insert("__pow__", new model::NativeFunction(model::int_pow));
+    model::based_int->attrs.insert("__neg__", new model::NativeFunction(model::int_neg));
     model::based_int->attrs.insert("__gt__", new model::NativeFunction(model::int_gt));
     model::based_int->attrs.insert("__lt__", new model::NativeFunction(model::int_lt));
     model::based_int->attrs.insert("__eq__", new model::NativeFunction(model::int_eq));

@@ -6,9 +6,9 @@
 
 namespace kiz {
 
-std::tuple<model::Object*, model::Object*> Vm::fetch_two_from_stack_top(
+auto Vm::fetch_two_from_stack_top(
     const std::string& op_name
-) {
+)-> std::tuple<model::Object*, model::Object*> {
     if (op_stack.size() < 2) {
         std::string err_msg = "OP_" + op_name + ": 操作数栈元素不足（需≥2）";
         std::cout << err_msg << std::endl;
@@ -156,12 +156,46 @@ void Vm::exec_IS(const Instruction& instruction) {
     op_stack.push(result);
 }
 
-// -------------------------- 容器指令 --------------------------
-void Vm::exec_IN(const Instruction& instruction) {
-    DEBUG_OUTPUT("exec in...");
-    auto [a, b] = fetch_two_from_stack_top("in");
+void Vm::exec_GE(const Instruction& instruction) {
+    auto [a, b] = fetch_two_from_stack_top("ge");
+    call(get_attr(a, "__eq__"), new model::List({b}), a);
+    call(get_attr(a, "__gt__"), new model::List({b}), a);
+    auto [gt_result, eq_result] = fetch_two_from_stack_top("ge");
 
-    call(get_attr(a, "__contains__"), new model::List({b}), a);
+    auto result = new model::Bool(false);
+    if (is_true(gt_result) or is_true(eq_result)) {
+        result->val = true;
+        op_stack.emplace(result);
+        return;
+    }
+    op_stack.emplace(result);
+}
+
+void Vm::exec_LE(const Instruction& instruction) {
+    auto [a, b] = fetch_two_from_stack_top("le");
+    call(get_attr(a, "__eq__"), new model::List({b}), a);
+    call(get_attr(a, "__lt__"), new model::List({b}), a);
+    auto [lt_result, eq_result] = fetch_two_from_stack_top("le");
+
+    auto result = new model::Bool(false);
+    if (is_true(lt_result) or is_true(eq_result)) {
+        result->val = true;
+        op_stack.emplace(result);
+        return;
+    }
+    op_stack.emplace(result);
+}
+
+void Vm::exec_NE(const Instruction& instruction) {
+    auto [a, b] = fetch_two_from_stack_top("le");
+    call(get_attr(a, "__eq__"), new model::List({b}), a);
+    if (is_true(op_stack.top())) {
+        op_stack.pop();
+        op_stack.emplace(new model::Bool(false));
+        return;
+    }
+    op_stack.pop();
+    op_stack.emplace(new model::Bool(true));
 }
 
 }

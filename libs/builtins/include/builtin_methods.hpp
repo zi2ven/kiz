@@ -12,6 +12,7 @@ Object* int_mul(Object* self, const List* args);
 Object* int_div(Object* self, const List* args);
 Object* int_pow(Object* self, const List* args);
 Object* int_mod(Object* self, const List* args);
+Object* int_neg(Object* self, const List* args);
 Object* int_eq(Object* self, const List* args);
 Object* int_lt(Object* self, const List* args);
 Object* int_gt(Object* self, const List* args);

@@ -13,8 +13,9 @@ enum class Opcode {
     OP_ADD, OP_SUB, OP_MUL, OP_DIV,
     OP_MOD, OP_POW, OP_NEG,
     OP_EQ, OP_GT, OP_LT,
+    OP_GE, OP_LE, OP_NE,
     OP_AND, OP_NOT, OP_OR,
-    OP_IS, OP_IN,
+    OP_IS,
 
     CALL, RET,
     GET_ATTR, SET_ATTR, CALL_METHOD,
@@ -45,13 +46,14 @@ inline std::string opcode_to_string(Opcode opc) {
         case Opcode::OP_EQ:       return "OP_EQ";
         case Opcode::OP_GT:       return "OP_GT";
         case Opcode::OP_LT:       return "OP_LT";
+        case Opcode::OP_GE:       return "OP_GE";
+        case Opcode::OP_LE:       return "OP_LE";
+        case Opcode::OP_NE:       return "OP_NE";
         case Opcode::OP_AND:      return "OP_AND";
         case Opcode::OP_NOT:      return "OP_NOT";
         case Opcode::OP_OR:       return "OP_OR";
 
-        // 成员/包含运算
         case Opcode::OP_IS:       return "OP_IS";
-        case Opcode::OP_IN:       return "OP_IN";
 
         // 函数调用/返回
         case Opcode::CALL:        return "CALL";

@@ -20,7 +20,11 @@ std::unique_ptr<Expr> Parser::parse_and_or() {
     DEBUG_OUTPUT("parsing and/or expression...");
     auto node = parse_comparison();
     
-    while (curr_token().type == TokenType::And or curr_token().type == TokenType::Or) {
+    while (
+        curr_token().type == TokenType::And
+        or curr_token().type == TokenType::Or
+        or curr_token().type == TokenType::Is
+    ) {
         auto op_token = skip_token(curr_token().text);
         auto right = parse_comparison(); // 解析右侧比较表达式
         node = std::make_unique<BinaryExpr>(
@@ -36,14 +40,13 @@ std::unique_ptr<Expr> Parser::parse_and_or() {
 std::unique_ptr<Expr> Parser::parse_comparison() {
     DEBUG_OUTPUT("parsing comparison...");
     auto node = parse_add_sub();
-    auto curr_type = curr_token().type;
     while (
-        curr_type == TokenType::Equal
-        or curr_type == TokenType::NotEqual
-        or curr_type == TokenType::Greater
-        or curr_type == TokenType::Less
-        or curr_type == TokenType::GreaterEqual
-        or curr_type == TokenType::LessEqual
+        curr_token().type == TokenType::Equal
+        or curr_token().type == TokenType::NotEqual
+        or curr_token().type == TokenType::Greater
+        or curr_token().type == TokenType::Less
+        or curr_token().type == TokenType::GreaterEqual
+        or curr_token().type == TokenType::LessEqual
     ) {
         auto tok = curr_token();
         auto op = skip_token().text;

@@ -75,6 +75,13 @@ model::Object* int_mul(model::Object* self, const model::List* args) {
     assert(false && "function Int.mul second arg need be Rational or Int");
 };
 
+model::Object* int_neg(model::Object* self, const model::List* args) {
+    auto self_int = dynamic_cast<Int*>(self);
+    assert(self_int!=nullptr);
+    auto new_int = dep::BigInt(0) - self_int->val;
+    return new Int(new_int);
+}
+
 // Int.__div__ 整数除法 self / args[0]
 model::Object* int_div(model::Object* self, const model::List* args) {
     DEBUG_OUTPUT("You given " + std::to_string(args->val.size()) + " arguments (int_div)");

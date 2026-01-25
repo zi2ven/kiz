@@ -122,11 +122,14 @@ private:
     static void exec_EQ(const Instruction& instruction);
     static void exec_GT(const Instruction& instruction);
     static void exec_LT(const Instruction& instruction);
+    static void exec_GE(const Instruction& instruction);
+    static void exec_LE(const Instruction& instruction);
+    static void exec_NE(const Instruction& instruction);
     static void exec_AND(const Instruction& instruction);
     static void exec_NOT(const Instruction& instruction);
     static void exec_OR(const Instruction& instruction);
     static void exec_IS(const Instruction& instruction);
-    static void exec_IN(const Instruction& instruction);
+
     static void exec_MAKE_LIST(const Instruction& instruction);
     static void exec_CALL(const Instruction& instruction);
     static void exec_RET(const Instruction& instruction);
@@ -138,10 +141,12 @@ private:
     static void exec_SET_GLOBAL(const Instruction& instruction);
     static void exec_SET_LOCAL(const Instruction& instruction);
     static void exec_SET_NONLOCAL(const Instruction& instruction);
+
     static void exec_TRY_END(const Instruction& instruction);
     static void exec_TRY_START(const Instruction& instruction);
     static void exec_IMPORT(const Instruction& instruction);
     static void exec_LOAD_ERROR(const Instruction& instruction);
+
     static void exec_JUMP(const Instruction& instruction);
     static void exec_JUMP_IF_FALSE(const Instruction& instruction);
     static void exec_THROW(const Instruction& instruction);

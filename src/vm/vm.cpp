@@ -300,11 +300,13 @@ void Vm::execute_instruction(const Instruction& instruction) {
         case Opcode::OP_EQ:           exec_EQ(instruction);           break;
         case Opcode::OP_GT:           exec_GT(instruction);           break;
         case Opcode::OP_LT:           exec_LT(instruction);           break;
+        case Opcode::OP_GE:           exec_GE(instruction);           break;
+        case Opcode::OP_LE:           exec_LE(instruction);           break;
+        case Opcode::OP_NE:           exec_NE(instruction);           break;
         case Opcode::OP_AND:          exec_AND(instruction);          break;
         case Opcode::OP_NOT:          exec_NOT(instruction);          break;
         case Opcode::OP_OR:           exec_OR(instruction);           break;
         case Opcode::OP_IS:           exec_IS(instruction);           break;
-        case Opcode::OP_IN:           exec_IN(instruction);           break;
         case Opcode::MAKE_LIST:       exec_MAKE_LIST(instruction);    break;
 
         case Opcode::CALL:            exec_CALL(instruction);          break;
