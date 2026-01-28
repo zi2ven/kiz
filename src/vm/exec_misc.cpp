@@ -1,9 +1,11 @@
-
 #include <cassert>
 
 #include "../models/models.hpp"
 #include "vm.hpp"
 #include "builtins/include/builtin_functions.hpp"
+#include "ir_gen/ir_gen.hpp"
+#include "lexer/lexer.hpp"
+#include "util/src_manager.hpp"
 
 namespace kiz {
 
@@ -83,7 +85,7 @@ void Vm::exec_MAKE_DICT(const Instruction& instruction) {
         key->make_ref(); // 增加引用计数
 
         // 调用 __hash__ 方法获取哈希值
-        call(get_attr(key, "__hash__"), new model::List({}), key);
+        call_function(get_attr(key, "__hash__"), new model::List({}), key);
         model::Object* hash_obj = fetch_one_from_stack_top();
 
         // 检查哈希值类型
@@ -112,13 +114,6 @@ void Vm::exec_TRY_END(const Instruction& instruction) {
 
     const size_t end_catch_pc = instruction.opn_list[0];
     call_stack.back()->pc = end_catch_pc;
-}
-
-void Vm::exec_IMPORT(const Instruction& instruction) {
-    size_t name_idx = instruction.opn_list[0];
-    std::string name = call_stack.back()->code_object->names[name_idx];
-    // todo
-
 }
 
 void Vm::exec_LOAD_ERROR(const Instruction& instruction) {

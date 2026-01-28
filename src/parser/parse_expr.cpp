@@ -224,6 +224,7 @@ std::unique_ptr<Expr> Parser::parse_primary() {
     if (tok.type == TokenType::LBrace) {
         decltype(DictExpr::elements) init_vec{};
         while (curr_token().type != TokenType::RBrace) {
+            DEBUG_OUTPUT("parse dict item");
             auto key = parse_expression();
             skip_token(":");
             auto val = parse_expression();
@@ -235,6 +236,7 @@ std::unique_ptr<Expr> Parser::parse_primary() {
             init_vec.emplace_back(std::move(key), std::move(val));
         }
         skip_token("}");
+        DEBUG_OUTPUT("finish parse dict");
         return std::make_unique<DictExpr>(curr_token().pos, std::move(init_vec));
     }
     if (tok.type == TokenType::LBracket) {

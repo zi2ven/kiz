@@ -47,7 +47,7 @@ void Vm::set_main_module(model::Module* src_module) {
     main_module = src_module;
     // 创建模块级调用帧（CallFrame）：模块是顶层执行单元，对应一个顶层调用帧
     auto module_call_frame = std::make_shared<CallFrame>(CallFrame{
-        src_module->name,                // 调用帧名称与模块名一致（便于调试）
+        src_module->path,                // 调用帧名称与模块名一致（便于调试）
 
         src_module,
         dep::HashMap<model::Object*>(), // 初始空局部变量表
@@ -104,44 +104,6 @@ void Vm::exec_curr_code() {
     DEBUG_OUTPUT("call stack length: " + std::to_string(call_stack.size()));
 }
 
-void Vm::exec_code_until_start_frame() {
-    size_t old_call_stack_size = call_stack.size();
-    while (!call_stack.empty() && running) {
-        auto& curr_frame = *call_stack.back();
-        // 检查当前帧是否执行完毕
-        if (curr_frame.pc >= curr_frame.code_object->code.size()) {
-            // 非模块帧则弹出，模块帧则退出循环
-            if (call_stack.size() > 1) {
-                call_stack.pop_back();
-            } else {
-                break;
-            }
-            continue;
-        }
-
-        // 执行当前指令
-        const Instruction& curr_inst = curr_frame.code_object->code[curr_frame.pc];
-        try {
-            if (curr_inst.opc == Opcode::RET and old_call_stack_size == call_stack.size()) {
-                call_stack.pop_back();
-                return;
-            }
-            execute_instruction(curr_inst);
-        } catch (NativeFuncError& e) {
-            instruction_throw(e.name, e.msg);
-        }
-        // 修正PC自增条件：仅非跳转/非RET指令自增
-        if (curr_inst.opc != Opcode::JUMP && curr_inst.opc != Opcode::JUMP_IF_FALSE && curr_inst.opc != Opcode::RET) {
-            curr_frame.pc++;
-        }
-    }
-}
-
-model::Object* Vm::get_return_val() {
-    assert(!op_stack.empty());
-    return op_stack.top();
-}
-
 CallFrame* Vm::fetch_curr_call_frame() {
     if ( !call_stack.empty() ) {
         return call_stack.back().get();
@@ -182,17 +144,13 @@ void Vm::set_and_exec_curr_code(const model::CodeObject* code_object) {
     DEBUG_OUTPUT("set_and_exec_curr_code: 执行新指令完成");
 }
 
-void Vm::load_required_modules(const dep::HashMap<model::Module*>& modules) {
-    loaded_modules = modules;
-}
-
 auto Vm::gen_pos_info() -> std::vector<std::pair<std::string, err::PositionInfo>> {
     size_t i = 0;
     std::vector<std::pair<std::string, err::PositionInfo>> positions;
     std::string path;
     for (const auto& frame: call_stack) {
         if (const auto m = dynamic_cast<model::Module*>(frame->owner)) {
-            path = m->name;
+            path = m->path;
         }
         err::PositionInfo pos {};
         if (i == call_stack.size() - 1) {
@@ -331,7 +289,7 @@ void Vm::execute_instruction(const Instruction& instruction) {
         case Opcode::JUMP_IF_FALSE:   exec_JUMP_IF_FALSE(instruction); break;
         case Opcode::THROW:           exec_THROW(instruction);         break;
         case Opcode::IS_INSTANCE:     exec_IS_INSTANCE(instruction);   break;
-        case Opcode::CREATE_OBJECT:  exec_CREATE_OBJECT(instruction);    break;
+        case Opcode::CREATE_OBJECT:   exec_CREATE_OBJECT(instruction);  break;
         case Opcode::STOP:            exec_STOP(instruction);          break;
         default:                      assert(false && "execute_instruction: 未知 opcode");
     }

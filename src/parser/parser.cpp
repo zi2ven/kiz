@@ -42,6 +42,7 @@ Token Parser::skip_token(const std::string& want_skip) {
     }
 
     // 严格报错
+    DEBUG_OUTPUT("You want to skip "+want_skip);
     assert(false);
 }
 
@@ -68,6 +69,8 @@ void Parser::skip_end_of_ln() {
     }
     // 到达文件末尾也视为合法结束
     if (curr_tok.type == TokenType::EndOfFile) {
+        DEBUG_OUTPUT("end of the file");
+        skip_token();
         return;
     }
     DEBUG_OUTPUT("curr_tok: " + curr_tok.text);

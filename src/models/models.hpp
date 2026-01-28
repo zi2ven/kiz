@@ -154,19 +154,20 @@ public:
 
 class Module : public Object {
 public:
-    std::string name;
-    CodeObject *code = nullptr;
+    std::string path;
+    CodeObject* code = nullptr;
     dep::HashMap<Object*> attrs;
 
     static constexpr ObjectType TYPE = ObjectType::OT_Module;
     [[nodiscard]] ObjectType get_type() const override { return TYPE; }
 
-    explicit Module(std::string name, CodeObject *code) : name(std::move(name)), code(code) {
+    explicit Module(std::string name, CodeObject *code) : path(std::move(name)), code(code) {
+        attrs.insert("__parent__", based_module);
         code->make_ref();
     }
 
     [[nodiscard]] std::string to_string() const override {
-        return "<Module: name='" + name + "' at " + ptr_to_string(this) + ">";
+        return "<Module: path='" + path + "' at " + ptr_to_string(this) + ">";
     }
 };
 
@@ -186,7 +187,7 @@ public:
     }
 
     [[nodiscard]] std::string to_string() const override {
-        return "<Function: name='" + name + "', argc=" + std::to_string(argc) + " at " + ptr_to_string(this) + ">";
+        return "<Function: path='" + name + "', argc=" + std::to_string(argc) + " at " + ptr_to_string(this) + ">";
     }
 };
 
@@ -205,7 +206,7 @@ public:
     return "<NativeFunction" +
            (name.empty() 
             ? "" 
-            : ": name='" + name + "'"
+            : ": path='" + name + "'"
             ) 
             + " at " + ptr_to_string(this) + ">";
 }

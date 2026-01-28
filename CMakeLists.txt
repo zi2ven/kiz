@@ -82,7 +82,8 @@ foreach(lib_file ${LIB_SRC_FILES})
 endforeach()
 
 # 合并所有cpp文件
-set(ALL_SRC_FILES ${SRC_FILES} ${LIB_SRC_FILES})
+set(ALL_SRC_FILES ${SRC_FILES} ${LIB_SRC_FILES}
+        src/vm/exec_import.cpp)
 
 # ===================== 编译配置（核心：让编译器找到hpp） =====================
 # 仅添加cpp到可执行目标（完全符合你的需求）

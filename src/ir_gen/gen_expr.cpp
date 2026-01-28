@@ -298,7 +298,6 @@ void IRGenerator::gen_dict(DictExpr* expr) {
         gen_expr(val_expr.get());
     }
 
-    // 将字典对象加入常量池并加载
     size_t dict_size = expr->elements.size();
     curr_code_list.emplace_back(
         Opcode::MAKE_DICT,

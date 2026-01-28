@@ -31,8 +31,12 @@ void Vm::entry_builtins() {
     model::based_nil->attrs.insert("__parent__", model::based_obj);
     model::based_rational->attrs.insert("__parent__", model::based_obj);
     model::based_function->attrs.insert("__parent__", model::based_obj);
+    model::based_decimal->attrs.insert("__parent__", model::based_obj);
+    model::based_module->attrs.insert("__parent__", model::based_obj);
     model::based_dict->attrs.insert("__parent__", model::based_obj);
     model::based_list->attrs.insert("__parent__", model::based_obj);
+    model::based_native_function->attrs.insert("__parent__", model::based_obj);
+    model::based_error->attrs.insert("__parent__", model::based_obj);
     model::based_str->attrs.insert("__parent__", model::based_obj);
 
     DEBUG_OUTPUT("registering magic methods...");

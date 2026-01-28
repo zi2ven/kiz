@@ -26,6 +26,17 @@ void IRGenerator::gen_block(const BlockStmt* block) {
     if (!block) return;
     for (auto& stmt : block->statements) {
         switch (stmt->ast_type) {
+            case AstType::ImportStmt: {
+                const auto* import_stmt = dynamic_cast<ImportStmt*>(stmt.get());
+                const size_t name_idx = get_or_add_name(curr_names, import_stmt->path);
+
+                curr_code_list.emplace_back(
+                    Opcode::IMPORT,
+                    std::vector{name_idx},
+                    stmt->pos
+                );
+                break;
+            }
             case AstType::AssignStmt: {
                 // 变量声明：生成初始化表达式IR + 存储变量指令
                 const auto* var_decl = dynamic_cast<AssignStmt*>(stmt.get());
@@ -34,7 +45,7 @@ void IRGenerator::gen_block(const BlockStmt* block) {
 
                 curr_code_list.emplace_back(
                     Opcode::SET_LOCAL,
-                    std::vector<size_t>{name_idx},
+                    std::vector{name_idx},
                     stmt->pos
                 );
                 break;

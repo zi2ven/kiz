@@ -36,6 +36,31 @@ std::unique_ptr<BlockStmt> Parser::parse_block(TokenType endswith) {
     return std::make_unique<BlockStmt>(block_tok.pos, std::move(block_stmts));
 }
 
+std::unique_ptr<BlockStmt> Parser::parse_block(TokenType endswith1, TokenType endswith2, TokenType endswith3) {
+    DEBUG_OUTPUT("parsing block (with end)");
+    std::vector<std::unique_ptr<Stmt>> block_stmts;
+    auto block_tok = curr_token();
+
+    while (curr_tok_idx_ < tokens_.size()) {
+        const Token& curr_tok = curr_token();
+
+        if (curr_tok.type == endswith1
+         or curr_tok.type == endswith2
+         or curr_tok.type == endswith3
+        ) break;
+
+        if (curr_tok.type == TokenType::EndOfFile) {
+            assert(false && "Block not terminated with 'end'");
+        }
+
+        if (auto stmt = parse_stmt()) {
+            block_stmts.push_back(std::move(stmt));
+        }
+    }
+
+    return std::make_unique<BlockStmt>(block_tok.pos, std::move(block_stmts));
+}
+
 // parse_if实现
 std::unique_ptr<IfStmt> Parser::parse_if() {
     DEBUG_OUTPUT("parsing if");
@@ -278,7 +303,7 @@ std::unique_ptr<Stmt> Parser::parse_stmt() {
     // 解析表达式语句
     auto expr = parse_expression();
     if (expr != nullptr and curr_token().text == "=") {
-        if (dynamic_cast<GetMemberExpr*>(expr.get())) {
+        if (expr->ast_type == AstType::GetMemberExpr) {
             DEBUG_OUTPUT("parsing set member");
             skip_token("=");
             auto value = parse_expression();
@@ -287,7 +312,7 @@ std::unique_ptr<Stmt> Parser::parse_stmt() {
             auto set_mem = std::make_unique<SetMemberStmt>(curr_token().pos, std::move(expr), std::move(value));
             return set_mem;
         }
-        if (dynamic_cast<GetItemExpr*>(expr.get())) {
+        if (expr->ast_type == AstType::GetItemExpr) {
             DEBUG_OUTPUT("parsing set item");
             skip_token("=");
             auto value = parse_expression();

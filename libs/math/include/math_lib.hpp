@@ -3,9 +3,9 @@
 
 namespace math_lib {
 
-inline auto one = new model::Int(dep::BigInt(1));
+inline auto one = new model::Int(1);
 
-inline auto _init_module_ = [](model::Object* self, const model::List* args) -> model::Object* {
+inline auto init_module = [](model::Object* self, const model::List* args) -> model::Object* {
     auto mod = new model::Module(
         "math",
         nullptr

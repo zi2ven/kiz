@@ -5,7 +5,7 @@ namespace kiz {
 
 void Vm::entry_std_modules() {
     std_modules.insert("math", new model::NativeFunction(
-        math_lib::_init_module_
+        math_lib::init_module
     ));
 }
 

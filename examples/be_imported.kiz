@@ -1,0 +1,21 @@
+__name__ = "module"
+
+print("init module...")
+abc = 0.1+2
+print(abc)
+
+fn bark()
+    print("A dog is barking")
+end
+
+fn foo()
+    bark()
+end
+
+fn __private__fn()
+    print("private function")
+end
+
+print(bark)
+print(foo)
+print(__private__fn)

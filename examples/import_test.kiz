@@ -1,0 +1,3 @@
+import "../examples/be_imported.kiz"
+
+print(module.abc)
