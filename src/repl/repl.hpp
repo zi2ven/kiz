@@ -19,10 +19,12 @@
 #include "../lexer/lexer.hpp"
 #include "../parser/parser.hpp"
 #include "../vm/vm.hpp"
-#include "../input_helper/repl_input_helper.hpp"
 #include "util/src_manager.hpp"
 
 namespace ui {
+
+bool if_pressing_shift();
+std::string get_whole_input(std::istream* is, std::ostream* os);
 
 class Repl {
     static const std::string file_path;
@@ -59,7 +61,7 @@ public:
     void loop();
 
     void eval_and_print(const std::string& cmd, size_t startline);
-    void process_command(const std::string& cmd);
+    void handle_user_input(const std::string& cmd);
 
     void stop() { is_running_ = false; }
 

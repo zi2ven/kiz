@@ -25,9 +25,7 @@ std::unique_ptr<BlockStmt> Parser::parse_block(TokenType endswith) {
         }
 
         if (curr_tok.type == TokenType::EndOfFile) {
-            // Original: assert(false && "Block not terminated with 'end'");
-            // Now:
-            err::error_reporter(this -> file_path, curr_token().pos, "ParsingError", "Block not terminated with 'end'");
+            err::error_reporter(file_path, curr_token().pos, "ParsingError", "Block not terminated with 'end'");
         }
 
         if (auto stmt = parse_stmt()) {
@@ -68,10 +66,8 @@ std::unique_ptr<IfStmt> Parser::parse_if() {
     DEBUG_OUTPUT("parsing if");
     // 解析if条件表达式
     auto cond_expr = parse_expression();
-    // Original: assert(cond_expr!=nullptr && "Invalid if condition");
-    // Now:
     if (cond_expr == nullptr)
-        err::error_reporter(this -> file_path,
+        err::error_reporter(file_path,
             curr_token().pos,
             "SyntaxError",
             "Invalid if condition"
@@ -123,7 +119,7 @@ std::unique_ptr<Stmt> Parser::parse_stmt() {
         // 解析循环条件表达式
         auto cond_expr = parse_expression();
         if (cond_expr == nullptr)
-            err::error_reporter(this -> file_path, curr_token().pos, "SyntaxError", "Invalid if condition");
+            err::error_reporter(file_path, curr_token().pos, "SyntaxError", "Invalid if condition");
         skip_start_of_block();
         auto while_block = parse_block();
         skip_token("end");
@@ -147,7 +143,7 @@ std::unique_ptr<Stmt> Parser::parse_stmt() {
                 if (curr_token().type == TokenType::Comma) {
                     skip_token(",");
                 } else if (curr_token().type != TokenType::RParen) {
-                    err::error_reporter(this -> file_path, curr_token().pos, "SyntaxError", "Mismatched function parameters");
+                    err::error_reporter(file_path, curr_token().pos, "SyntaxError", "Mismatched function parameters");
                 }
             }
             skip_token(")");  // 跳过右括号

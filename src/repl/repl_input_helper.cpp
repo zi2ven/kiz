@@ -1,14 +1,10 @@
-//
-// Created by CGrakeski on 2026/1/24.
-//
-
 #include <iosfwd>
 #include <string>
 #include <windows.h>
 #include <chrono>
 #include <istream>
 #include "kiz.hpp"
-#include "repl_input_helper.hpp"
+#include "repl.hpp"
 
 
 #ifdef _WIN32
@@ -20,7 +16,7 @@
     #include <X11/Xutil.h>
 #endif
 
-bool helper::if_pressing_shift() {
+bool ui::if_pressing_shift() {
 
 #ifdef _WIN32
     // Windows 实现
@@ -74,25 +70,25 @@ bool helper::if_pressing_shift() {
  * @param os 输出流
  * @result 完整输入
  */
-std::string helper::get_whole_input(std::istream *is, std::ostream *os) {
-    if (is == nullptr)
-        throw std::runtime_error("istream pointer is null");
+std::string ui::get_whole_input(std::istream *is, std::ostream *os) {
+    if (!is) {
+        throw KizStopRunningSignal("istream pointer is null");
+    }
 
     std::string input;
-    char ch;
 
     while (true) {
-        ch = is->get();
+        char ch = is->get();
         // 检查Ctrl+Enter或Shift+Enter组合键来结束输入
         if (if_pressing_shift() && ch == '\n') {
             std::string result = input;
             DEBUG_OUTPUT("final returns input: " << result);
             return result;
-        } else if (ch == '\n') {
-            os -> put('.');
-            os -> put('.');
-            os -> put('.');
-            os -> put(' ');
+        } if (ch == '\n') {
+            os->put('.');
+            os->put('.');
+            os->put('.');
+            os->put(' ');
             input += ch;
             DEBUG_OUTPUT("Add \\n to input: " << input);
         } else {

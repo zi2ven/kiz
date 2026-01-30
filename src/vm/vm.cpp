@@ -147,7 +147,7 @@ void Vm::set_and_exec_curr_code(const model::CodeObject* code_object) {
 
 
 auto Vm::gen_pos_info() -> std::vector<std::pair<std::string, err::PositionInfo>> {
-    size_t i = 0;
+    size_t frame_index = 0;
     std::vector<std::pair<std::string, err::PositionInfo>> positions;
     std::string path;
     for (const auto& frame: call_stack) {
