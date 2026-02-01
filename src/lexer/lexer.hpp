@@ -13,6 +13,40 @@
 #include "../../deps/u8str.hpp"
 #include "../error/error_reporter.hpp"
 
+// 常用字符常量
+static const dep::UTF8Char CHAR_M('M');
+static const dep::UTF8Char CHAR_m('m');
+static const dep::UTF8Char CHAR_QUOTE('"');
+static const dep::UTF8Char CHAR_SQUOTE('\'');
+static const dep::UTF8Char CHAR_HASH('#');
+static const dep::UTF8Char CHAR_SLASH('/');
+static const dep::UTF8Char CHAR_STAR('*');
+static const dep::UTF8Char CHAR_EQUAL('=');
+static const dep::UTF8Char CHAR_EXCLAM('!');
+static const dep::UTF8Char CHAR_LESS('<');
+static const dep::UTF8Char CHAR_GREATER('>');
+static const dep::UTF8Char CHAR_MINUS('-');
+static const dep::UTF8Char CHAR_COLON(':');
+static const dep::UTF8Char CHAR_DOT('.');
+static const dep::UTF8Char CHAR_BACKSLASH('\\');
+static const dep::UTF8Char CHAR_NEWLINE('\n');
+static const dep::UTF8Char CHAR_RETURN('\r');
+static const dep::UTF8Char CHAR_PLUS('+');
+static const dep::UTF8Char CHAR_PERCENT('%');
+static const dep::UTF8Char CHAR_CARET('^');
+static const dep::UTF8Char CHAR_PIPE('|');
+static const dep::UTF8Char CHAR_COMMA(',');
+static const dep::UTF8Char CHAR_SEMICOLON(';');
+static const dep::UTF8Char CHAR_LPAREN('(');
+static const dep::UTF8Char CHAR_RPAREN(')');
+static const dep::UTF8Char CHAR_LBRACE('{');
+static const dep::UTF8Char CHAR_RBRACE('}');
+static const dep::UTF8Char CHAR_LBRACKET('[');
+static const dep::UTF8Char CHAR_RBRACKET(']');
+static const dep::UTF8Char CHAR_e('e');
+static const dep::UTF8Char CHAR_E('E');
+static const dep::UTF8Char CHAR_SPACE(' ');
+
 namespace kiz {
 
 // Token 类型
@@ -94,9 +128,8 @@ class Lexer {
     size_t total_cp_ = 0;                   // 总码点数量
 
     // 辅助函数
-    static bool is_newline(dep::UTF8Char ch) {
-        uint32_t cp = ch.to_cod_point();
-        return cp == '\n' || cp == U'\r';
+    static bool is_newline(const dep::UTF8Char& ch) {
+        return ch == CHAR_NEWLINE;  // 只检查\n
     }
 
     static bool is_space(dep::UTF8Char ch) {

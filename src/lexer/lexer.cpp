@@ -9,39 +9,6 @@
 #include <cassert>
 
 namespace kiz {
-// 常用字符常量
-static const dep::UTF8Char CHAR_M('M');
-static const dep::UTF8Char CHAR_m('m');
-static const dep::UTF8Char CHAR_QUOTE('"');
-static const dep::UTF8Char CHAR_SQUOTE('\'');
-static const dep::UTF8Char CHAR_HASH('#');
-static const dep::UTF8Char CHAR_SLASH('/');
-static const dep::UTF8Char CHAR_STAR('*');
-static const dep::UTF8Char CHAR_EQUAL('=');
-static const dep::UTF8Char CHAR_EXCLAM('!');
-static const dep::UTF8Char CHAR_LESS('<');
-static const dep::UTF8Char CHAR_GREATER('>');
-static const dep::UTF8Char CHAR_MINUS('-');
-static const dep::UTF8Char CHAR_COLON(':');
-static const dep::UTF8Char CHAR_DOT('.');
-static const dep::UTF8Char CHAR_BACKSLASH('\\');
-static const dep::UTF8Char CHAR_NEWLINE('\n');
-static const dep::UTF8Char CHAR_RETURN('\r');
-static const dep::UTF8Char CHAR_PLUS('+');
-static const dep::UTF8Char CHAR_PERCENT('%');
-static const dep::UTF8Char CHAR_CARET('^');
-static const dep::UTF8Char CHAR_PIPE('|');
-static const dep::UTF8Char CHAR_COMMA(',');
-static const dep::UTF8Char CHAR_SEMICOLON(';');
-static const dep::UTF8Char CHAR_LPAREN('(');
-static const dep::UTF8Char CHAR_RPAREN(')');
-static const dep::UTF8Char CHAR_LBRACE('{');
-static const dep::UTF8Char CHAR_RBRACE('}');
-static const dep::UTF8Char CHAR_LBRACKET('[');
-static const dep::UTF8Char CHAR_RBRACKET(']');
-static const dep::UTF8Char CHAR_e('e');
-static const dep::UTF8Char CHAR_E('E');
-static const dep::UTF8Char CHAR_SPACE(' ');
 
 // 初始化关键字
 void Lexer::init_keywords() {
@@ -374,7 +341,7 @@ std::vector<Token> Lexer::tokenize(const std::string& src, size_t lineno_start) 
             }
 
             std::string ident = ident_str.to_string();
-            TokenType type = keywords_.count(ident) ? keywords_[ident] : TokenType::Identifier;
+            TokenType type = keywords_.contains(ident) ? keywords_[ident] : TokenType::Identifier;
 
             emit_token(type, start_cp, cp_pos_, start_lno, start_col, lineno_, col_ - 1);
             curr_state_ = LexState::Start;
@@ -534,7 +501,7 @@ std::vector<Token> Lexer::tokenize(const std::string& src, size_t lineno_start) 
 
             next(); // 跳过引号
 
-            bool unclosed = true;
+            //bool closed = false;
             dep::UTF8String raw_str;
 
             // 消费字符串内容
@@ -546,7 +513,7 @@ std::vector<Token> Lexer::tokenize(const std::string& src, size_t lineno_start) 
                 }
 
                 if (c == quote_char) {
-                    unclosed = false;
+                    //closed = true;
                     next(); // 跳过闭合引号
                     break;
                 }
@@ -567,19 +534,19 @@ std::vector<Token> Lexer::tokenize(const std::string& src, size_t lineno_start) 
             std::string raw = raw_str.to_string();
             std::string content = handle_escape(raw);
 
-            if (unclosed) {
-                err::error_reporter(file_path_, {start_lno, lineno_, start_col, col_},
-                                  "SyntaxError", "Unclosed string literal");
-            }
+            // if (!closed) {
+            //     err::error_reporter(file_path_, {start_lno, lineno_, start_col, col_},
+            //                       "SyntaxError", "Unclosed string literal");
+            // }
 
             tokens_.emplace_back(TokenType::String, content, start_lno, lineno_, start_col, col_ - 1);
             curr_state_ = LexState::Start;
             break;
         }
 
-            // ======================================
-            // 单行注释状态：# 至行尾
-            // ======================================
+        // ======================================
+        // 单行注释状态：# 至行尾
+        // ======================================
         case LexState::SingleComment: {
             next(); // 跳过#
 
@@ -592,9 +559,9 @@ std::vector<Token> Lexer::tokenize(const std::string& src, size_t lineno_start) 
             break;
         }
 
-            // ======================================
-            // 块注释状态：/* */ 支持跨行
-            // ======================================
+        // ======================================
+        // 块注释状态：/* */ 支持跨行
+        // ======================================
         case LexState::BlockComment: {
             next(); // 跳过/
             next(); // 跳过*

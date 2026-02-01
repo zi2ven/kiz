@@ -16,6 +16,102 @@
 #include "color.hpp"
 #include "../util/src_manager.hpp"
 
+#ifdef _WIN32
+#include <windows.h>
+#endif
+
+/**
+ * @brief 控制台编码自适应转换为UTF-8字符串
+ * @param src 从控制台getline读取的原始字符串（GBK/UTF-8）
+ * @return 转换后的UTF-8字符串，非GBK控制台直接返回原字符串
+ * @throw std::runtime_error 编码转换失败时抛出异常（含错误信息）
+ */
+std::string to_utf8str(std::string src) {
+    // 非Windows平台（Linux/macOS）默认控制台是UTF-8，直接返回原字符串
+#ifndef _WIN32
+    return src;
+#else
+    // Windows平台：获取控制台输入编码（GetConsoleCP：Console Code Page）
+    UINT console_cp = GetConsoleCP();
+    // 控制台编码不是GBK（GBK对应Windows代码页936），直接返回原字符串
+    if (console_cp != 936) {
+        return src;
+    }
+
+    // ------------ 核心逻辑：GBK（多字节）→ UTF-16（宽字符）→ UTF-8（多字节） ------------
+    // Windows系统编码转换需通过「多字节↔宽字符」中转，使用系统原生API保证兼容性
+    int wchar_len = MultiByteToWideChar(
+        console_cp,        // 源编码：GBK（936）
+        0,                 // 转换标志：0（默认，不做特殊处理）
+        src.c_str(),       // 源字符串首地址
+        -1,                // 源字符串长度：-1（自动计算，包含末尾的'\0'）
+        nullptr,           // 目标宽字符缓冲区：先传nullptr获取所需缓冲区大小
+        0                  // 目标缓冲区大小：0（配合nullptr使用）
+    );
+    // 第一步转换失败：获取宽字符缓冲区大小失败
+    if (wchar_len == 0) {
+        DWORD err_code = GetLastError();
+        throw std::runtime_error("GBK to UTF-16 convert failed, error code: " + std::to_string(err_code));
+    }
+
+    // 分配UTF-16宽字符缓冲区（使用vector自动管理内存，避免手动new/delete泄漏）
+    std::vector<wchar_t> wchar_buf(wchar_len);
+    // 执行GBK→UTF-16实际转换
+    int convert_res = MultiByteToWideChar(
+        console_cp,
+        0,
+        src.c_str(),
+        -1,
+        wchar_buf.data(),  // 目标宽字符缓冲区首地址
+        wchar_len          // 目标缓冲区大小（已提前计算）
+    );
+    // 第二步转换失败：实际GBK→UTF-16转换失败
+    if (convert_res == 0) {
+        DWORD err_code = GetLastError();
+        throw std::runtime_error("GBK to UTF-16 convert failed, error code: " + std::to_string(err_code));
+    }
+
+    // UTF-16→UTF-8转换：获取UTF-8缓冲区所需大小
+    int utf8_len = WideCharToMultiByte(
+        CP_UTF8,           // 目标编码：UTF-8（系统预定义常量CP_UTF8）
+        0,                 // 转换标志：0（默认）
+        wchar_buf.data(),  // 源宽字符字符串首地址
+        -1,                // 源字符串长度：-1（自动计算）
+        nullptr,           // 目标UTF-8缓冲区：先传nullptr获取大小
+        0,                 // 目标缓冲区大小：0
+        nullptr,           // 无效字符替换：nullptr（使用系统默认替换符）
+        nullptr            // 替换标志：nullptr
+    );
+    // 第三步转换失败：获取UTF-8缓冲区大小失败
+    if (utf8_len == 0) {
+        DWORD err_code = GetLastError();
+        throw std::runtime_error("UTF-16 to UTF-8 convert failed, error code: " + std::to_string(err_code));
+    }
+
+    // 分配UTF-8缓冲区
+    std::vector<char> utf8_buf(utf8_len);
+    // 执行UTF-16→UTF-8实际转换
+    convert_res = WideCharToMultiByte(
+        CP_UTF8,
+        0,
+        wchar_buf.data(),
+        -1,
+        utf8_buf.data(),   // 目标UTF-8缓冲区首地址
+        utf8_len,
+        nullptr,
+        nullptr
+    );
+    // 第四步转换失败：实际UTF-16→UTF-8转换失败
+    if (convert_res == 0) {
+        DWORD err_code = GetLastError();
+        throw KizStopRunningSignal("UTF-16 to UTF-8 convert failed, error code: " + std::to_string(err_code));
+    }
+
+    // 将vector缓冲区转换为std::string（自动剔除末尾的'\0'）
+    return std::string(utf8_buf.data());
+#endif
+}
+
 namespace ui {
 
 const std::string Repl::file_path = "<shell#>";
@@ -27,8 +123,8 @@ Repl::Repl(): is_running_(true), multiline_start_(1), vm_(file_path) {
 std::string Repl::read(const std::string& prompt) {
     std::cout << Color::BRIGHT_MAGENTA << prompt << Color::RESET;
     std::cout.flush();
-    std::string result = get_whole_input(&std::cin, &std::cout);
-    std::cout << "Repl read result (Test)" << result << std::endl;
+    std::string result = to_utf8str(get_whole_input(&std::cin, &std::cout));
+    std::cout << "Repl read result (Test)" << dep::UTF8String(result) << std::endl;
     return result;
 }
 
